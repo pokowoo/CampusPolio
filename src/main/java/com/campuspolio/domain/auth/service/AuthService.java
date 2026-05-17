@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private static final String SCHOOL_EMAIL_DOMAIN = "@syu.ac.kr";
+    private static final String UNIVERSITY_EMAIL_DOMAIN_SUFFIX = ".ac.kr";
 
     private final GoogleOAuthClient googleOAuthClient;
     private final UserRepository userRepository;
@@ -36,7 +36,7 @@ public class AuthService {
             throw new CustomException(ErrorCode.GOOGLE_EMAIL_NOT_FOUND);
         }
 
-        boolean isDomainValid = email.endsWith(SCHOOL_EMAIL_DOMAIN);
+        boolean isDomainValid = isUniversityEmail(email);
 
         User user = userRepository.findByGoogleId(googleId)
                 .orElseGet(() -> createUser(email, googleId, isDomainValid));
@@ -54,5 +54,17 @@ public class AuthService {
     private User createUser(String email, String googleId, boolean isDomainValid) {
         User user = User.createGoogleUser(email, googleId, isDomainValid);
         return userRepository.save(user);
+    }
+
+    private boolean isUniversityEmail(String email) {
+        int atIndex = email.indexOf("@");
+
+        if (atIndex == -1 || atIndex == email.length() - 1) {
+            return false;
+        }
+
+        String domain = email.substring(atIndex + 1).toLowerCase();
+
+        return domain.endsWith(UNIVERSITY_EMAIL_DOMAIN_SUFFIX);
     }
 }
