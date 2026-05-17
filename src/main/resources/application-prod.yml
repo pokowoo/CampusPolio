@@ -1,9 +1,9 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://<RDS_ENDPOINT>:3306/campuspolio?serverTimezone=Asia/Seoul
-    username: <RDS_USERNAME>
-    password: <RDS_PASSWORD>
+    url: jdbc:mysql://database-1.cvamgg8imhhs.ap-northeast-2.rds.amazonaws.com:3306/campuspolio?serverTimezone=Asia/Seoul
+    username: admin
+    password: 12345678
 
   jpa:
     database-platform: org.hibernate.dialect.MySQL8Dialect
@@ -15,7 +15,7 @@ spring:
 
   data:
     redis:
-      host: <REDIS_ENDPOINT>   # ElastiCache 쓰면 여기
+      host: <REDIS_ENDPOINT>
       port: 6379
 
 logging:
