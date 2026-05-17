@@ -18,6 +18,9 @@ spring:
       host: localhost
       port: 6380
 
+  session:
+    store-type: redis
+
 logging:
   level:
     org.hibernate.SQL: debug
