@@ -12,6 +12,9 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import com.campuspolio.global.config.WebConfig;
+import com.campuspolio.global.security.AuthenticatedUserArgumentResolver;
+import org.springframework.context.annotation.Import;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -19,6 +22,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(UserController.class)
 @AutoConfigureMockMvc(addFilters = false)
+@Import({
+        WebConfig.class,
+        AuthenticatedUserArgumentResolver.class
+})
 class UserControllerTest {
 
     @Autowired
