@@ -17,7 +17,7 @@ public enum ErrorCode {
     EMAIL_VERIFICATION_CODE_MISMATCH(HttpStatus.BAD_REQUEST, "인증번호가 일치하지 않습니다."),
     EMAIL_ALREADY_VERIFIED(HttpStatus.BAD_REQUEST, "이미 이메일 인증이 완료되었습니다."),
 
-    PROFILE_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "이미 프로필이 존재합니다."),
+    PROFILE_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 프로필이 존재합니다."),
     PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND, "프로필을 찾을 수 없습니다."),
 
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다.");
