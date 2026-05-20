@@ -40,9 +40,8 @@ public class User {
     @Column(nullable = false, length = 30)
     private UserRole role;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
-    private UserStatus status;
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -60,7 +59,7 @@ public class User {
         this.domainValid = domainValid;
         this.verified = false;
         this.role = UserRole.USER;
-        this.status = UserStatus.ACTIVE;
+        this.deletedAt = null;
     }
 
     public static User createGoogleUser(
@@ -80,11 +79,19 @@ public class User {
     }
 
     public void withdraw() {
-        this.status = UserStatus.DELETED;
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    public void restore() {
+        this.deletedAt = null;
+    }
+
+    public boolean isDeleted() {
+        return this.deletedAt != null;
     }
 
     public boolean isActive() {
-        return this.status == UserStatus.ACTIVE;
+        return this.deletedAt == null;
     }
 
     @PrePersist
