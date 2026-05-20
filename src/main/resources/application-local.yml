@@ -21,6 +21,10 @@ spring:
   session:
     store-type: redis
 
+google:
+  oauth:
+    client-id: ${GOOGLE_CLIENT_ID:}
+
 logging:
   level:
     org.hibernate.SQL: debug
