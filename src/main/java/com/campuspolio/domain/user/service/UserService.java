@@ -11,14 +11,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserService {
 
     private final UserRepository userRepository;
 
-    @Transactional(readOnly = true)
     public UserMeResponse getMe(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+        User user = findActiveUser(userId);
 
         return new UserMeResponse(
                 user.getId(),
@@ -26,5 +25,22 @@ public class UserService {
                 user.isDomainValid(),
                 user.isVerified()
         );
+    }
+
+    @Transactional
+    public void withdraw(Long userId) {
+        User user = findActiveUser(userId);
+        user.withdraw();
+    }
+
+    private User findActiveUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        if (user.isDeleted()) {
+            throw new CustomException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        return user;
     }
 }
