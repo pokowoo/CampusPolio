@@ -23,7 +23,7 @@ public class AuthService {
 
     @Transactional
     public LoginResponse login(LoginRequest request) {
-        GoogleUserInfo googleUserInfo = googleOAuthClient.getUserInfo(request.accessToken());
+        GoogleUserInfo googleUserInfo = googleOAuthClient.getUserInfo(request.idToken());
 
         String googleId = googleUserInfo.sub();
         String email = googleUserInfo.email();
@@ -40,6 +40,10 @@ public class AuthService {
 
         User user = userRepository.findByGoogleId(googleId)
                 .orElseGet(() -> createUser(email, googleId, isDomainValid));
+
+        if (user.isDeleted()) {
+            user.restore();
+        }
 
         user.updateDomainValid(isDomainValid);
 
