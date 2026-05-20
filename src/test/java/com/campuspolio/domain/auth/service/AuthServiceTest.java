@@ -35,11 +35,11 @@ class AuthServiceTest {
     @Test
     @DisplayName("신규 Google 사용자가 로그인하면 유저를 생성하고 응답을 반환한다")
     void login_newUser_createsUser() throws Exception {
-        String accessToken = "fake-token";
+        String idToken = "fake-id-token";
         String googleId = "google-sub-123";
-        String email = "user@syu.ac.kr";
+        String email = "user@korea.ac.kr";
 
-        when(googleOAuthClient.getUserInfo(accessToken))
+        when(googleOAuthClient.getUserInfo(idToken))
                 .thenReturn(new GoogleUserInfo(
                         googleId,
                         email,
@@ -58,7 +58,7 @@ class AuthServiceTest {
                     return user;
                 });
 
-        LoginResponse response = authService.login(new LoginRequest(accessToken));
+        LoginResponse response = authService.login(new LoginRequest(idToken));
 
         assertThat(response.id()).isEqualTo(1L);
         assertThat(response.email()).isEqualTo(email);
@@ -72,14 +72,14 @@ class AuthServiceTest {
     @Test
     @DisplayName("기존 사용자가 로그인하면 새 유저를 생성하지 않는다")
     void login_existingUser_doesNotCreateUser() throws Exception {
-        String accessToken = "fake-token";
+        String idToken = "fake-id-token";
         String googleId = "google-sub-123";
-        String email = "user@syu.ac.kr";
+        String email = "user@korea.ac.kr";
 
         User existingUser = User.createGoogleUser(email, googleId, true);
         setId(existingUser, 1L);
 
-        when(googleOAuthClient.getUserInfo(accessToken))
+        when(googleOAuthClient.getUserInfo(idToken))
                 .thenReturn(new GoogleUserInfo(
                         googleId,
                         email,
@@ -91,7 +91,7 @@ class AuthServiceTest {
         when(userRepository.findByGoogleId(googleId))
                 .thenReturn(Optional.of(existingUser));
 
-        LoginResponse response = authService.login(new LoginRequest(accessToken));
+        LoginResponse response = authService.login(new LoginRequest(idToken));
 
         assertThat(response.id()).isEqualTo(1L);
         assertThat(response.email()).isEqualTo(email);
@@ -102,13 +102,13 @@ class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("@syu.ac.kr 이메일이면 domainValid가 true다")
-    void login_syuEmail_domainValidTrue() throws Exception {
-        String accessToken = "fake-token";
+    @DisplayName(".ac.kr 대학 이메일이면 domainValid가 true다")
+    void login_universityEmail_domainValidTrue() throws Exception {
+        String idToken = "fake-id-token";
         String googleId = "google-sub-123";
-        String email = "user@syu.ac.kr";
+        String email = "user@korea.ac.kr";
 
-        when(googleOAuthClient.getUserInfo(accessToken))
+        when(googleOAuthClient.getUserInfo(idToken))
                 .thenReturn(new GoogleUserInfo(
                         googleId,
                         email,
@@ -127,19 +127,19 @@ class AuthServiceTest {
                     return user;
                 });
 
-        LoginResponse response = authService.login(new LoginRequest(accessToken));
+        LoginResponse response = authService.login(new LoginRequest(idToken));
 
         assertThat(response.isDomainValid()).isTrue();
     }
 
     @Test
-    @DisplayName("@syu.ac.kr 이메일이 아니면 domainValid가 false다")
-    void login_nonSyuEmail_domainValidFalse() throws Exception {
-        String accessToken = "fake-token";
+    @DisplayName(".ac.kr 대학 이메일이 아니면 domainValid가 false다")
+    void login_nonUniversityEmail_domainValidFalse() throws Exception {
+        String idToken = "fake-id-token";
         String googleId = "google-sub-456";
         String email = "user@gmail.com";
 
-        when(googleOAuthClient.getUserInfo(accessToken))
+        when(googleOAuthClient.getUserInfo(idToken))
                 .thenReturn(new GoogleUserInfo(
                         googleId,
                         email,
@@ -158,7 +158,7 @@ class AuthServiceTest {
                     return user;
                 });
 
-        LoginResponse response = authService.login(new LoginRequest(accessToken));
+        LoginResponse response = authService.login(new LoginRequest(idToken));
 
         assertThat(response.isDomainValid()).isFalse();
     }
@@ -166,9 +166,9 @@ class AuthServiceTest {
     @Test
     @DisplayName("Google 이메일이 없으면 예외가 발생한다")
     void login_withoutEmail_throwsException() {
-        String accessToken = "fake-token";
+        String idToken = "fake-id-token";
 
-        when(googleOAuthClient.getUserInfo(accessToken))
+        when(googleOAuthClient.getUserInfo(idToken))
                 .thenReturn(new GoogleUserInfo(
                         "google-sub-123",
                         null,
@@ -177,7 +177,7 @@ class AuthServiceTest {
                         null
                 ));
 
-        assertThatThrownBy(() -> authService.login(new LoginRequest(accessToken)))
+        assertThatThrownBy(() -> authService.login(new LoginRequest(idToken)))
                 .isInstanceOf(CustomException.class)
                 .hasMessage(ErrorCode.GOOGLE_EMAIL_NOT_FOUND.getMessage());
     }
@@ -185,20 +185,170 @@ class AuthServiceTest {
     @Test
     @DisplayName("Google sub가 없으면 예외가 발생한다")
     void login_withoutGoogleId_throwsException() {
-        String accessToken = "fake-token";
+        String idToken = "fake-id-token";
 
-        when(googleOAuthClient.getUserInfo(accessToken))
+        when(googleOAuthClient.getUserInfo(idToken))
                 .thenReturn(new GoogleUserInfo(
                         null,
-                        "user@syu.ac.kr",
+                        "user@korea.ac.kr",
                         true,
                         "홍길동",
                         null
                 ));
 
-        assertThatThrownBy(() -> authService.login(new LoginRequest(accessToken)))
+        assertThatThrownBy(() -> authService.login(new LoginRequest(idToken)))
                 .isInstanceOf(CustomException.class)
                 .hasMessage(ErrorCode.INVALID_GOOGLE_TOKEN.getMessage());
+    }
+
+    @Test
+    @DisplayName("잘못된 Google idToken이면 예외가 발생한다")
+    void login_invalidGoogleIdToken_throwsException() {
+        String idToken = "invalid-id-token";
+
+        when(googleOAuthClient.getUserInfo(idToken))
+                .thenThrow(new CustomException(ErrorCode.INVALID_GOOGLE_TOKEN));
+
+        assertThatThrownBy(() -> authService.login(new LoginRequest(idToken)))
+                .isInstanceOf(CustomException.class)
+                .hasMessage(ErrorCode.INVALID_GOOGLE_TOKEN.getMessage());
+
+        verify(googleOAuthClient).getUserInfo(idToken);
+        verifyNoInteractions(userRepository);
+    }
+
+    @Test
+    @DisplayName("만료된 Google idToken이면 예외가 발생한다")
+    void login_expiredGoogleIdToken_throwsException() {
+        String idToken = "expired-id-token";
+
+        when(googleOAuthClient.getUserInfo(idToken))
+                .thenThrow(new CustomException(ErrorCode.INVALID_GOOGLE_TOKEN));
+
+        assertThatThrownBy(() -> authService.login(new LoginRequest(idToken)))
+                .isInstanceOf(CustomException.class)
+                .hasMessage(ErrorCode.INVALID_GOOGLE_TOKEN.getMessage());
+
+        verify(googleOAuthClient).getUserInfo(idToken);
+        verifyNoInteractions(userRepository);
+    }
+
+    @Test
+    @DisplayName("GoogleOAuthClient 호출 중 네트워크 오류가 발생하면 예외가 전파된다")
+    void login_googleOAuthClientNetworkError_throwsException() {
+        String idToken = "fake-id-token";
+
+        when(googleOAuthClient.getUserInfo(idToken))
+                .thenThrow(new RuntimeException("Google API network error"));
+
+        assertThatThrownBy(() -> authService.login(new LoginRequest(idToken)))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("Google API network error");
+
+        verify(googleOAuthClient).getUserInfo(idToken);
+        verifyNoInteractions(userRepository);
+    }
+
+    @Test
+    @DisplayName("신규 사용자 저장 중 DB 예외가 발생하면 예외가 전파된다")
+    void login_newUserSaveFailed_throwsException() {
+        String idToken = "fake-id-token";
+        String googleId = "google-sub-123";
+        String email = "user@korea.ac.kr";
+
+        when(googleOAuthClient.getUserInfo(idToken))
+                .thenReturn(new GoogleUserInfo(
+                        googleId,
+                        email,
+                        true,
+                        "홍길동",
+                        null
+                ));
+
+        when(userRepository.findByGoogleId(googleId))
+                .thenReturn(Optional.empty());
+
+        when(userRepository.save(any(User.class)))
+                .thenThrow(new RuntimeException("DB error"));
+
+        assertThatThrownBy(() -> authService.login(new LoginRequest(idToken)))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessage("DB error");
+
+        verify(userRepository).findByGoogleId(googleId);
+        verify(userRepository).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Google profile image가 있어도 로그인은 정상 처리되고 자동 저장하지 않는다")
+    void login_withGoogleProfileImage_success() throws Exception {
+        String idToken = "fake-id-token";
+        String googleId = "google-sub-789";
+        String email = "user@korea.ac.kr";
+
+        when(googleOAuthClient.getUserInfo(idToken))
+                .thenReturn(new GoogleUserInfo(
+                        googleId,
+                        email,
+                        true,
+                        "홍길동",
+                        "https://image.com/profile.png"
+                ));
+
+        when(userRepository.findByGoogleId(googleId))
+                .thenReturn(Optional.empty());
+
+        when(userRepository.save(any(User.class)))
+                .thenAnswer(invocation -> {
+                    User user = invocation.getArgument(0);
+                    setId(user, 3L);
+                    return user;
+                });
+
+        LoginResponse response = authService.login(new LoginRequest(idToken));
+
+        assertThat(response.id()).isEqualTo(3L);
+        assertThat(response.email()).isEqualTo(email);
+        assertThat(response.isDomainValid()).isTrue();
+
+        verify(userRepository).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("탈퇴한 사용자가 재로그인하면 계정이 복구된다")
+    void login_deletedUser_restoresUser() throws Exception {
+        String idToken = "fake-id-token";
+        String googleId = "google-sub-123";
+        String email = "user@korea.ac.kr";
+
+        User deletedUser = User.createGoogleUser(email, googleId, true);
+        setId(deletedUser, 1L);
+        deletedUser.withdraw();
+
+        assertThat(deletedUser.isDeleted()).isTrue();
+        assertThat(deletedUser.getDeletedAt()).isNotNull();
+
+        when(googleOAuthClient.getUserInfo(idToken))
+                .thenReturn(new GoogleUserInfo(
+                        googleId,
+                        email,
+                        true,
+                        "홍길동",
+                        null
+                ));
+
+        when(userRepository.findByGoogleId(googleId))
+                .thenReturn(Optional.of(deletedUser));
+
+        LoginResponse response = authService.login(new LoginRequest(idToken));
+
+        assertThat(response.id()).isEqualTo(1L);
+        assertThat(response.email()).isEqualTo(email);
+        assertThat(deletedUser.getDeletedAt()).isNull();
+        assertThat(deletedUser.isActive()).isTrue();
+
+        verify(userRepository).findByGoogleId(googleId);
+        verify(userRepository, never()).save(any(User.class));
     }
 
     private void setId(User user, Long id) throws Exception {
