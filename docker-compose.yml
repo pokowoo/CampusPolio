@@ -6,7 +6,7 @@ services:
     image: redis:7
 
   spring:
-    image: spw11/campuspolio:latest
+    image: woojinlee2/campuspolio:latest
 
     ports:
       - "8080:8080"

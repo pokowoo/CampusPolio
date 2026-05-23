@@ -46,12 +46,10 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
 
           script: |
-            sudo docker build -t ${{ secrets.DOCKER_USERNAME }}/campuspolio .
+            cd ~/CampusPolio
 
-            sudo docker stop campuspolio || true
-            sudo docker rm campuspolio || true
+            sudo docker compose down
 
-            sudo docker run -d \
-              -p 8080:8080 \
-              --name campuspolio \
-              ${{ secrets.DOCKER_USERNAME }}/campuspolio
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/campuspolio:latest
+
+            sudo docker compose up -d
