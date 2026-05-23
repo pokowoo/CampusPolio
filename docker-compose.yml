@@ -1,36 +1,18 @@
-version: '3.9'
+version: '3'
 
 services:
+
+  redis:
+    image: redis:7
+
   spring:
-    build: .
-    container_name: spring-server
+    image: spw11/campuspolio:latest
 
     ports:
       - "8080:8080"
 
-    depends_on:
-      - mysql
-      - redis
     env_file:
       - .env
 
-  mysql:
-    image: mysql:8.0
-    container_name: campus-mysql
-
-    environment:
-      MYSQL_ROOT_PASSWORD: 1234
-      MYSQL_DATABASE: campuspolio
-
-    ports:
-      - "3307:3306"
-
-    command:
-      --default-authentication-plugin=mysql_native_password
-
-  redis:
-    image: redis:7
-    container_name: campus-redis
-
-    ports:
-      - "6380:6379"
+    depends_on:
+      - redis

@@ -1,0 +1,57 @@
+name: Deploy Spring Boot
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: GitHub 코드 가져오기
+        uses: actions/checkout@v4
+
+      - name: Java 설치
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: gradle build
+        run: |
+          chmod +x gradlew
+          ./gradlew clean build
+
+      - name: Docker 로그인
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Docker image build
+        run: docker build -t DOCKER_USERNAME/campuspolio .
+
+      - name: Docker Hub push
+        run: docker push DOCKER_USERNAME/campuspolio
+
+      - name: EC2 자동배포
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+
+          script: |
+            sudo docker pull DOCKER_USERNAME/campuspolio
+
+            sudo docker stop campuspolio || true
+            sudo docker rm campuspolio || true
+
+            sudo docker run -d \
+              -p 8080:8080 \
+              --name campuspolio \
+              DOCKER_USERNAME/campuspolio
