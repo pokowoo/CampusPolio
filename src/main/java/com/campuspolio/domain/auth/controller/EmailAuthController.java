@@ -23,7 +23,7 @@ public class EmailAuthController {
     @Operation(
             summary = "이메일 인증번호 발송",
             description = """
-                    로그인한 사용자의 이메일로 인증번호를 발송합니다.
+                    사용자가 입력한 대학 이메일(.ac.kr)로 인증번호를 발송합니다
                     현재 구현에서는 실제 SMTP 발송 대신 서버 로그에 인증번호를 출력합니다.
                     대학 이메일(.ac.kr)만 인증할 수 있습니다.
                     """
@@ -54,7 +54,7 @@ public class EmailAuthController {
             summary = "이메일 인증번호 검증",
             description = """
                     이메일과 6자리 인증번호를 검증합니다.
-                    검증 성공 시 User의 verified 값이 true로 변경됩니다.
+                    검증 성공 시 User의 universityVerified 값이 true로 변경됩니다.
                     """
     )
     @io.swagger.v3.oas.annotations.responses.ApiResponse(
