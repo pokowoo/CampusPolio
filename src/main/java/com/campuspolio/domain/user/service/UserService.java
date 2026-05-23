@@ -22,8 +22,7 @@ public class UserService {
         return new UserMeResponse(
                 user.getId(),
                 user.getEmail(),
-                user.isDomainValid(),
-                user.isVerified()
+                user.isUniversityVerified()
         );
     }
 

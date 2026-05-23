@@ -30,9 +30,8 @@ class UserServiceTest {
     @DisplayName("userId로 내 정보를 조회한다")
     void getMe_success() throws Exception {
         User user = User.createGoogleUser(
-                "user@korea.ac.kr",
-                "google-sub-123",
-                true
+                "user@gmail.com",
+                "google-sub-123"
         );
         setId(user, 1L);
 
@@ -42,9 +41,8 @@ class UserServiceTest {
         UserMeResponse response = userService.getMe(1L);
 
         assertThat(response.id()).isEqualTo(1L);
-        assertThat(response.email()).isEqualTo("user@korea.ac.kr");
-        assertThat(response.isDomainValid()).isTrue();
-        assertThat(response.isVerified()).isFalse();
+        assertThat(response.email()).isEqualTo("user@gmail.com");
+        assertThat(response.universityVerified()).isFalse();
 
         verify(userRepository).findById(1L);
     }
@@ -66,9 +64,8 @@ class UserServiceTest {
     @DisplayName("탈퇴한 사용자는 내 정보 조회 시 예외가 발생한다")
     void getMe_deletedUser_throwsException() throws Exception {
         User user = User.createGoogleUser(
-                "user@korea.ac.kr",
-                "google-sub-123",
-                true
+                "user@gmail.com",
+                "google-sub-123"
         );
         setId(user, 1L);
         user.withdraw();
@@ -87,9 +84,8 @@ class UserServiceTest {
     @DisplayName("회원 탈퇴 시 deletedAt이 기록된다")
     void withdraw_success() throws Exception {
         User user = User.createGoogleUser(
-                "user@korea.ac.kr",
-                "google-sub-123",
-                true
+                "user@gmail.com",
+                "google-sub-123"
         );
         setId(user, 1L);
 
@@ -122,9 +118,8 @@ class UserServiceTest {
     @DisplayName("이미 탈퇴한 사용자 탈퇴 시 예외가 발생한다")
     void withdraw_alreadyDeletedUser_throwsException() throws Exception {
         User user = User.createGoogleUser(
-                "user@korea.ac.kr",
-                "google-sub-123",
-                true
+                "user@gmail.com",
+                "google-sub-123"
         );
         setId(user, 1L);
         user.withdraw();
