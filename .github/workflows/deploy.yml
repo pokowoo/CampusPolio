@@ -33,10 +33,10 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Docker image build
-        run: docker build -t DOCKER_USERNAME/campuspolio .
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/campuspolio .
 
       - name: Docker Hub push
-        run: docker push DOCKER_USERNAME/campuspolio
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/campuspolio
 
       - name: EC2 자동배포
         uses: appleboy/ssh-action@v1.0.3
@@ -46,7 +46,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
 
           script: |
-            sudo docker pull DOCKER_USERNAME/campuspolio
+            sudo docker build -t ${{ secrets.DOCKER_USERNAME }}/campuspolio .
 
             sudo docker stop campuspolio || true
             sudo docker rm campuspolio || true
@@ -54,4 +54,4 @@ jobs:
             sudo docker run -d \
               -p 8080:8080 \
               --name campuspolio \
-              DOCKER_USERNAME/campuspolio
+              ${{ secrets.DOCKER_USERNAME }}/campuspolio
