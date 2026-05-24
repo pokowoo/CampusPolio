@@ -22,4 +22,7 @@ spring:
 
 logging:
   level:
-    org.hibernate.SQL: debug
+    com.zaxxer.hikari: DEBUG
+    org.hibernate: DEBUG
+    org.springframework.jdbc: DEBUG
+    org.springframework.boot.autoconfigure.jdbc: DEBUG
