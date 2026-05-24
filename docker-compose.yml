@@ -1,18 +1,36 @@
-version: '3'
+version: "3.8"
 
 services:
+  backend:
+    image: campuspolio:latest
+    container_name: campus-backend
 
-  redis:
-    image: redis:7
+    depends_on:
+      - redis
 
-  spring:
-    image: woojinlee2/campuspolio:latest
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_NAME: ${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+
+      SPRING_PROFILES_ACTIVE: prod
 
     ports:
       - "8080:8080"
 
-    env_file:
-      - .env
+    restart: always
 
-    depends_on:
-      - redis
+  redis:
+    image: redis:7
+    container_name: campus-redis
+
+    ports:
+      - "6379:6379"
+
+    restart: always
