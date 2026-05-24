@@ -1,28 +1,3 @@
 spring:
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3307/campuspolio_test?serverTimezone=Asia/Seoul
-    username: root
-    password: 1234
-
-  jpa:
-    database-platform: org.hibernate.dialect.MySQL8Dialect
-
-    hibernate:
-      ddl-auto: create-drop
-
-    properties:
-      hibernate:
-        format_sql: true
-
-  data:
-    redis:
-      host: localhost
-      port: 6380
-
-  session:
-    store-type: none
-
-logging:
-  level:
-    org.hibernate.SQL: debug
+  profiles:
+    active: prod

@@ -1,0 +1,30 @@
+spring:
+  datasource: # woojin local
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/campuspolio?serverTimezone=Asia/Seoul
+    username: root
+    password: 1111
+
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6380
+
+  session:
+    store-type: redis
+
+google:
+  oauth:
+    client-id: ${GOOGLE_CLIENT_ID:}
+
+logging:
+  level:
+    org.hibernate.SQL: debug
