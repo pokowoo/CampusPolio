@@ -7,9 +7,11 @@ on:
 
 jobs:
   deploy:
+
     runs-on: ubuntu-latest
 
     steps:
+
       - name: GitHub 코드 가져오기
         uses: actions/checkout@v4
 
@@ -19,7 +21,7 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Gradle build
+      - name: gradle build
         run: |
           chmod +x gradlew
           ./gradlew clean build
@@ -31,10 +33,10 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Docker image build
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/campuspolio:latest .
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/campuspolio .
 
       - name: Docker Hub push
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/campuspolio:latest
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/campuspolio
 
       - name: EC2 자동배포
         uses: appleboy/ssh-action@v1.0.3
@@ -46,8 +48,8 @@ jobs:
           script: |
             cd ~/CampusPolio
 
-            sudo docker compose down --remove-orphans
+            sudo docker compose down
 
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/campuspolio:latest
 
-            sudo docker compose up -d --no-build
+            sudo docker compose up -d
