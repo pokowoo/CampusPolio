@@ -42,9 +42,10 @@ class ProfileServiceTest {
 
         User user = User.createGoogleUser(
                 "user@korea.ac.kr",
-                "google-123",
-                true
+                "google-123"
         );
+        user.verifyUniversity();
+
         setId(user, userId);
 
         UserProfile profile = UserProfile.create(
@@ -52,6 +53,7 @@ class ProfileServiceTest {
                 "길동이",
                 "백엔드 개발자"
         );
+
         setProfileId(profile, 10L);
 
         profile.update(
@@ -78,7 +80,8 @@ class ProfileServiceTest {
         assertThat(response.bio()).isEqualTo("백엔드 개발자");
         assertThat(response.major()).isEqualTo("컴퓨터공학과");
         assertThat(response.grade()).isEqualTo(4);
-        assertThat(response.profileImage()).isEqualTo("https://s3.amazonaws.com/profile.png");
+        assertThat(response.profileImage())
+                .isEqualTo("https://s3.amazonaws.com/profile.png");
     }
 
     @Test
@@ -101,9 +104,9 @@ class ProfileServiceTest {
 
         User user = User.createGoogleUser(
                 "user@korea.ac.kr",
-                "google-123",
-                true
+                "google-123"
         );
+
         setId(user, userId);
 
         when(userRepository.findById(userId))
@@ -124,9 +127,9 @@ class ProfileServiceTest {
 
         User user = User.createGoogleUser(
                 "user@korea.ac.kr",
-                "google-123",
-                true
+                "google-123"
         );
+
         setId(user, userId);
 
         when(userRepository.findById(userId))
@@ -160,9 +163,9 @@ class ProfileServiceTest {
 
         User user = User.createGoogleUser(
                 "user@korea.ac.kr",
-                "google-123",
-                true
+                "google-123"
         );
+
         setId(user, userId);
 
         when(userRepository.findById(userId))
@@ -204,9 +207,9 @@ class ProfileServiceTest {
 
         User user = User.createGoogleUser(
                 "user@korea.ac.kr",
-                "google-123",
-                true
+                "google-123"
         );
+
         setId(user, userId);
 
         when(userRepository.findById(userId))
@@ -233,9 +236,9 @@ class ProfileServiceTest {
 
         User user = User.createGoogleUser(
                 "user@korea.ac.kr",
-                "google-123",
-                true
+                "google-123"
         );
+
         setId(user, userId);
 
         UserProfile profile = UserProfile.create(
@@ -243,6 +246,7 @@ class ProfileServiceTest {
                 "길동이",
                 "백엔드 개발자"
         );
+
         setProfileId(profile, 10L);
 
         when(userRepository.findById(userId))
@@ -268,10 +272,12 @@ class ProfileServiceTest {
 
         assertThat(profile.getName()).isEqualTo("홍길동");
         assertThat(profile.getNickname()).isEqualTo("길동이");
-        assertThat(profile.getBio()).isEqualTo("백엔드 개발 및 AI 프로젝트를 진행합니다.");
+        assertThat(profile.getBio())
+                .isEqualTo("백엔드 개발 및 AI 프로젝트를 진행합니다.");
         assertThat(profile.getMajor()).isEqualTo("컴퓨터공학과");
         assertThat(profile.getGrade()).isEqualTo(4);
-        assertThat(profile.getProfileImage()).isEqualTo("https://s3.amazonaws.com/profile.png");
+        assertThat(profile.getProfileImage())
+                .isEqualTo("https://s3.amazonaws.com/profile.png");
     }
 
     @Test
@@ -304,9 +310,9 @@ class ProfileServiceTest {
 
         User user = User.createGoogleUser(
                 "user@korea.ac.kr",
-                "google-123",
-                true
+                "google-123"
         );
+
         setId(user, userId);
 
         when(userRepository.findById(userId))
@@ -337,9 +343,9 @@ class ProfileServiceTest {
 
         User user = User.createGoogleUser(
                 "user@korea.ac.kr",
-                "google-123",
-                true
+                "google-123"
         );
+
         setId(user, userId);
 
         when(userRepository.findById(userId))

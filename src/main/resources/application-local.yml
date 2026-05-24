@@ -23,7 +23,7 @@ spring:
 
 google:
   oauth:
-    client-id: ${GOOGLE_CLIENT_ID:}
+    client-id: ${GOOGLE_CLIENT_ID:dummy-client-id}
 
 logging:
   level:

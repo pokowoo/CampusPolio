@@ -34,9 +34,9 @@ public class EmailAuthService {
         User user = getUser(userId);
         String email = request.email();
 
-        validateEmail(user, email);
+        validateUniversityEmail(email);
 
-        if (user.isVerified()) {
+        if (user.isUniversityVerified()) {
             throw new CustomException(ErrorCode.EMAIL_ALREADY_VERIFIED);
         }
 
@@ -46,7 +46,6 @@ public class EmailAuthService {
         EmailVerification emailVerification = EmailVerification.create(email, code, expiresAt);
         emailVerificationRepository.save(emailVerification);
 
-        // TODO: 실제 SMTP 붙이면 이 로그 대신 메일 발송 로직으로 교체
         log.info("[이메일 인증번호] email={}, code={}, expiresAt={}", email, code, expiresAt);
 
         return new EmailAuthResponse("인증번호가 발송되었습니다.");
@@ -57,9 +56,9 @@ public class EmailAuthService {
         User user = getUser(userId);
         String email = request.email();
 
-        validateEmail(user, email);
+        validateUniversityEmail(email);
 
-        if (user.isVerified()) {
+        if (user.isUniversityVerified()) {
             throw new CustomException(ErrorCode.EMAIL_ALREADY_VERIFIED);
         }
 
@@ -78,9 +77,9 @@ public class EmailAuthService {
         }
 
         emailVerification.verify();
-        user.verifyEmail();
+        user.verifyUniversity();
 
-        return new EmailAuthResponse("이메일 인증이 완료되었습니다.");
+        return new EmailAuthResponse("대학 인증이 완료되었습니다.");
     }
 
     private User getUser(Long userId) {
@@ -88,11 +87,7 @@ public class EmailAuthService {
                 .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
     }
 
-    private void validateEmail(User user, String email) {
-        if (!user.getEmail().equals(email)) {
-            throw new CustomException(ErrorCode.EMAIL_NOT_MATCHED);
-        }
-
+    private void validateUniversityEmail(String email) {
         if (!isUniversityEmail(email)) {
             throw new CustomException(ErrorCode.EMAIL_NOT_UNIVERSITY_DOMAIN);
         }

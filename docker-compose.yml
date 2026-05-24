@@ -30,6 +30,9 @@ services:
 
     restart: always
 
+    volumes:
+      - mysql-data:/var/lib/mysql
+
   redis:
     image: redis:7
     container_name: campus-redis

@@ -58,8 +58,7 @@ class UserControllerTest {
 
         UserMeResponse response = new UserMeResponse(
                 1L,
-                "user@korea.ac.kr",
-                true,
+                "user@gmail.com",
                 false
         );
 
@@ -72,9 +71,8 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.id").value(1))
-                .andExpect(jsonPath("$.data.email").value("user@korea.ac.kr"))
-                .andExpect(jsonPath("$.data.isDomainValid").value(true))
-                .andExpect(jsonPath("$.data.isVerified").value(false));
+                .andExpect(jsonPath("$.data.email").value("user@gmail.com"))
+                .andExpect(jsonPath("$.data.universityVerified").value(false));
 
         verify(userService).getMe(1L);
     }

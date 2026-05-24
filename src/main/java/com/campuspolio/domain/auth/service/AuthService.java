@@ -16,18 +16,32 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private static final String UNIVERSITY_EMAIL_DOMAIN_SUFFIX = ".ac.kr";
-
     private final GoogleOAuthClient googleOAuthClient;
     private final UserRepository userRepository;
 
     @Transactional
     public LoginResponse login(LoginRequest request) {
+
         GoogleUserInfo googleUserInfo = googleOAuthClient.getUserInfo(request.idToken());
 
         String googleId = googleUserInfo.sub();
         String email = googleUserInfo.email();
 
+        validateGoogleInfo(googleId, email);
+
+        User user = userRepository.findByGoogleId(googleId)
+                .orElseGet(() -> createUser(email, googleId));
+
+        handleDeletedUser(user);
+
+        return new LoginResponse(
+                user.getId(),
+                user.getEmail(),
+                user.isUniversityVerified()
+        );
+    }
+
+    private void validateGoogleInfo(String googleId, String email) {
         if (googleId == null || googleId.isBlank()) {
             throw new CustomException(ErrorCode.INVALID_GOOGLE_TOKEN);
         }
@@ -35,40 +49,15 @@ public class AuthService {
         if (email == null || email.isBlank()) {
             throw new CustomException(ErrorCode.GOOGLE_EMAIL_NOT_FOUND);
         }
+    }
 
-        boolean isDomainValid = isUniversityEmail(email);
+    private User createUser(String email, String googleId) {
+        return userRepository.save(User.createGoogleUser(email, googleId));
+    }
 
-        User user = userRepository.findByGoogleId(googleId)
-                .orElseGet(() -> createUser(email, googleId, isDomainValid));
-
+    private void handleDeletedUser(User user) {
         if (user.isDeleted()) {
             user.restore();
         }
-
-        user.updateDomainValid(isDomainValid);
-
-        return new LoginResponse(
-                user.getId(),
-                user.getEmail(),
-                user.isDomainValid(),
-                user.isVerified()
-        );
-    }
-
-    private User createUser(String email, String googleId, boolean isDomainValid) {
-        User user = User.createGoogleUser(email, googleId, isDomainValid);
-        return userRepository.save(user);
-    }
-
-    private boolean isUniversityEmail(String email) {
-        int atIndex = email.indexOf("@");
-
-        if (atIndex == -1 || atIndex == email.length() - 1) {
-            return false;
-        }
-
-        String domain = email.substring(atIndex + 1).toLowerCase();
-
-        return domain.endsWith(UNIVERSITY_EMAIL_DOMAIN_SUFFIX);
     }
 }

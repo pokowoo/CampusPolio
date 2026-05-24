@@ -30,52 +30,46 @@ public class User {
     @Column(name = "google_id", nullable = false, length = 255)
     private String googleId;
 
-    @Column(name = "domain_valid", nullable = false)
-    private boolean domainValid;
-
-    @Column(nullable = false)
-    private boolean verified;
+    // ⭐ 대학 인증 여부 (핵심)
+    @Column(name = "university_verified", nullable = false)
+    private boolean universityVerified;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private UserRole role;
 
+    // soft delete
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    // audit
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    private User(
-            String email,
-            String googleId,
-            boolean domainValid
-    ) {
+    // ======================
+    // 생성자 / 팩토리
+    // ======================
+
+    private User(String email, String googleId) {
         this.email = email;
         this.googleId = googleId;
-        this.domainValid = domainValid;
-        this.verified = false;
+        this.universityVerified = false;
         this.role = UserRole.USER;
-        this.deletedAt = null;
     }
 
-    public static User createGoogleUser(
-            String email,
-            String googleId,
-            boolean domainValid
-    ) {
-        return new User(email, googleId, domainValid);
+    public static User createGoogleUser(String email, String googleId) {
+        return new User(email, googleId);
     }
 
-    public void updateDomainValid(boolean domainValid) {
-        this.domainValid = domainValid;
-    }
+    // ======================
+    // 비즈니스 로직
+    // ======================
 
-    public void verifyEmail() {
-        this.verified = true;
+    public void verifyUniversity() {
+        this.universityVerified = true;
     }
 
     public void withdraw() {
@@ -86,13 +80,17 @@ public class User {
         this.deletedAt = null;
     }
 
+    public boolean isActive() {
+        return this.deletedAt == null;
+    }
+
     public boolean isDeleted() {
         return this.deletedAt != null;
     }
 
-    public boolean isActive() {
-        return this.deletedAt == null;
-    }
+    // ======================
+    // JPA lifecycle
+    // ======================
 
     @PrePersist
     protected void onCreate() {
