@@ -2,9 +2,7 @@ version: "3.8"
 
 services:
   backend:
-    env_file:
-      - .env
-    build: .
+    image: woojinlee2/campuspolio:latest   # ✅ 이게 핵심
     container_name: campus-backend
 
     depends_on:
