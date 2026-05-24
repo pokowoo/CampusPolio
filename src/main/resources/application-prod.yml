@@ -1,9 +1,9 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://database-1.cvamgg8imhhs.ap-northeast-2.rds.amazonaws.com:3306/campuspolio?serverTimezone=Asia/Seoul
-    username: admin
-    password: 12345678
+    url: jdbc:mysql://${DB_HOST}:3306/${DB_NAME}?serverTimezone=Asia/Seoul
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
 
   jpa:
     database-platform: org.hibernate.dialect.MySQL8Dialect
