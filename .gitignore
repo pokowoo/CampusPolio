@@ -28,7 +28,8 @@ out/
 bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
-
+# 환경변수
+.env
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/

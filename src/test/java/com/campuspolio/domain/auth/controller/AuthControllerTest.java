@@ -46,7 +46,6 @@ class AuthControllerTest {
     @Test
     @DisplayName("로그인 성공 시 userId를 세션에 저장하고 사용자 정보를 반환한다")
     void login_success_setsSessionAndReturnsUserInfo() throws Exception {
-
         LoginResponse response = new LoginResponse(
                 1L,
                 "user@korea.ac.kr",
@@ -93,6 +92,28 @@ class AuthControllerTest {
     @DisplayName("세션이 없어도 로그아웃 요청은 오류 없이 처리된다")
     void logout_withoutSession_success() throws Exception {
 
+        mockMvc.perform(post("/api/auth/logout"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+    }
+
+    @Test
+    @DisplayName("세션이 있으면 로그아웃에 성공하고 세션을 무효화한다")
+    void logout_withSession_successAndInvalidatesSession() throws Exception {
+        MockHttpSession session = new MockHttpSession();
+        session.setAttribute(SessionConst.LOGIN_USER_ID, 1L);
+
+        mockMvc.perform(post("/api/auth/logout")
+                        .session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+
+        assertThat(session.isInvalid()).isTrue();
+    }
+
+    @Test
+    @DisplayName("세션이 없어도 로그아웃 요청은 오류 없이 처리된다")
+    void logout_withoutSession_success() throws Exception {
         mockMvc.perform(post("/api/auth/logout"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
