@@ -36,8 +36,7 @@ bin/
 /dist/
 /nbdist/
 /.nb-gradle/
-# production config
-src/main/resources/application-prod.yml
+
 ### VS Code ###
 .vscode/
 
