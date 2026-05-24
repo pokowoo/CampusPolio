@@ -1,9 +1,10 @@
 spring:
-  datasource:
+  datasource: # woojin local
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${DB_HOST}:3306/${DB_NAME}?serverTimezone=Asia/Seoul
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:mysql://localhost:3306/campuspolio?serverTimezone=Asia/Seoul
+    username: root
+    password: 1111
+
   jpa:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
@@ -14,16 +15,16 @@ spring:
 
   data:
     redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
+      host: localhost
+      port: 6380
 
   session:
     store-type: redis
 
+google:
+  oauth:
+    client-id: ${GOOGLE_CLIENT_ID:}
+
 logging:
   level:
     org.hibernate.SQL: debug
-
-google:
-  oauth:
-    client-id: ${GOOGLE_CLIENT_ID}
