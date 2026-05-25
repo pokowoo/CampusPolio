@@ -63,7 +63,7 @@ public class SecurityConfig {
                 "http://localhost:5500",
                 "http://127.0.0.1:3000",
                 "http://127.0.0.1:5500",
-                "https://campus-polio.vercel.app/",
+                "https://campus-polio.vercel.app",
                 "null"
         ));
 
