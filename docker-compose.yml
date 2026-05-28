@@ -24,7 +24,7 @@ services:
     container_name: campus-redis
 
     ports:
-      - "6380:6379"
+      - "6379:6379"
 
   backend:
     build: .
