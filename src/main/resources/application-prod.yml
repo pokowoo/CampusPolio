@@ -1,9 +1,10 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://campuspolio.cvamgg8imhhs.ap-northeast-2.rds.amazonaws.com:3306/campuspolio?serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true&useSSL=false
-    username: admin
-    password: 12345678
+    url: jdbc:mysql://${DB_HOST}:3306/${DB_NAME}?serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true&useSSL=false
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
   jpa:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
@@ -14,8 +15,8 @@ spring:
 
   data:
     redis:
-      host: redis
-      port: 6379
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
 
   session:
     store-type: redis
@@ -26,4 +27,4 @@ logging:
 
 google:
   oauth:
-    client-id: 92814016544-2h2jrg9e6r2bdf0dun09mcscgmcrh093.apps.googleusercontent.com
+    client-id: ${GOOGLE_CLIENT_ID}
