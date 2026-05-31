@@ -131,6 +131,55 @@ public enum ErrorCode {
     ),
 
     // ======================
+    // PORTFOLIO
+    // ======================
+
+    PORTFOLIO_NOT_FOUND(
+            HttpStatus.NOT_FOUND,
+            "포트폴리오를 찾을 수 없습니다."
+    ),
+
+    PORTFOLIO_FORBIDDEN(
+            HttpStatus.FORBIDDEN,
+            "포트폴리오 권한이 없습니다."
+    ),
+
+    PORTFOLIO_TITLE_REQUIRED(
+            HttpStatus.BAD_REQUEST,
+            "포트폴리오 제목은 필수입니다."
+    ),
+
+    PORTFOLIO_ALREADY_DELETED(
+            HttpStatus.BAD_REQUEST,
+            "이미 삭제된 포트폴리오입니다."
+    ),
+
+    UNIVERSITY_VERIFICATION_REQUIRED(
+            HttpStatus.FORBIDDEN,
+            "대학 인증이 필요합니다."
+    ),
+
+    PORTFOLIO_PROJECT_LIMIT_EXCEEDED(
+            HttpStatus.BAD_REQUEST,
+            "포트폴리오에는 최대 50개의 프로젝트만 추가할 수 있습니다."
+    ),
+
+    PORTFOLIO_PROJECT_DUPLICATED(
+            HttpStatus.BAD_REQUEST,
+            "이미 포트폴리오에 추가된 프로젝트입니다."
+    ),
+
+    PORTFOLIO_PROJECT_NOT_INCLUDED(
+            HttpStatus.BAD_REQUEST,
+            "포트폴리오에 포함되지 않은 프로젝트입니다."
+    ),
+
+    PORTFOLIO_PUBLIC_PROJECT_REQUIRED(
+            HttpStatus.BAD_REQUEST,
+            "공개 포트폴리오는 공개 프로젝트를 1개 이상 포함해야 합니다."
+    ),
+
+    // ======================
     // COMMON
     // ======================
 
@@ -138,6 +187,7 @@ public enum ErrorCode {
             HttpStatus.INTERNAL_SERVER_ERROR,
             "서버 오류가 발생했습니다."
     );
+
 
     private final HttpStatus status;
     private final String message;
