@@ -4,6 +4,8 @@ import com.campuspolio.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Builder
@@ -43,6 +45,10 @@ public class Project extends BaseTimeEntity {
     @Column(nullable = false, length = 20)
     private ProjectStatus status;
 
+    // soft delete
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     // =========================
     // 생성 메서드
     // =========================
@@ -60,6 +66,7 @@ public class Project extends BaseTimeEntity {
                 .viewCount(0)
                 .likeCount(0)
                 .status(ProjectStatus.DRAFT)
+                .deletedAt(null)
                 .build();
     }
 
@@ -84,11 +91,28 @@ public class Project extends BaseTimeEntity {
         this.isPublic = true;
     }
 
+    public void makePublic() {
+        this.isPublic = true;
+    }
+
     public void makePrivate() {
         this.isPublic = false;
     }
 
     public void increaseViewCount() {
         this.viewCount++;
+    }
+
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
+        this.isPublic = false;
+    }
+
+    public boolean isDeleted() {
+        return this.deletedAt != null;
+    }
+
+    public boolean isActive() {
+        return this.deletedAt == null;
     }
 }
