@@ -11,7 +11,7 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
 
     ports:
-      - "3307:3306"
+      - "3306:3306"
 
     command:
       --default-authentication-plugin=mysql_native_password
@@ -24,7 +24,7 @@ services:
     container_name: campus-redis
 
     ports:
-      - "6380:6379"
+      - "6379:6379"
 
   backend:
     build: .
