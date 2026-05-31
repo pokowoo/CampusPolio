@@ -23,7 +23,7 @@ public class AuthController {
     @Operation(
             summary = "Google OAuth 로그인",
             description = """
-                    프론트에서 Google 로그인 후 받은 accessToken을 서버로 전달합니다.
+                    프론트에서 Google 로그인 후 받은 idToken을 서버로 전달합니다.
                     서버는 Google 사용자 정보를 검증한 뒤 User를 조회/생성하고 세션에 userId를 저장합니다.
                     """
     )
