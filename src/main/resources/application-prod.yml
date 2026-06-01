@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://campuspolio.cvamgg8imhhs.ap-northeast-2.rds.amazonaws.com:3306/campuspolio?serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true&useSSL=false
+    username: admin
+    password: 12345678
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+
+  data:
+    redis:
+      host: redis
+      port: 6379
+
+  session:
+    store-type: redis
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+
+google:
+  oauth:
+    client-id: 633963792915-6kakl4jr88gh41dubqr61gf8j0v1jba1.apps.googleusercontent.com
