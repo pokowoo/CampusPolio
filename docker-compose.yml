@@ -39,7 +39,7 @@ services:
       DB_NAME: ${MYSQL_DATABASE}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
-      REDIS_ENDPOINT: redis
+      REDIS_HOST: redis
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
 
     ports:

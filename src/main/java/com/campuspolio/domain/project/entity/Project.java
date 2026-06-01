@@ -1,34 +1,39 @@
 package com.campuspolio.domain.project.entity;
 
-import com.campuspolio.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Builder
+@Table(name = "project")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
-@Table(name = "projects")
-public class Project extends BaseTimeEntity {
+public class Project {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "project_id")
-    private Long projectId;
+    private Long id;
 
     @Column(nullable = false, length = 255)
     private String title;
 
-    @Column(length = 500)
+    @Column(length = 1000)
     private String description;
 
+    @Column(length = 500)
+    private String thumbnail;
+
     @Lob
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(columnDefinition = "MEDIUMTEXT")
     private String content;
 
-    @Column(name = "thumbnail_url", length = 500)
-    private String thumbnailUrl;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ProjectStatus status;
 
     @Column(name = "is_public", nullable = false)
     private boolean isPublic;
@@ -36,47 +41,37 @@ public class Project extends BaseTimeEntity {
     @Column(name = "view_count", nullable = false)
     private int viewCount;
 
-    @Column(name = "like_count", nullable = false)
-    private int likeCount;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private ProjectStatus status;
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
 
-    // =========================
-    // 생성 메서드
-    // =========================
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
-    public static Project createDraft(
-            String title,
-            String description
-    ) {
-        return Project.builder()
-                .title(title)
-                .description(description)
-                .content("")
-                .thumbnailUrl(null)
-                .isPublic(false)
-                .viewCount(0)
-                .likeCount(0)
-                .status(ProjectStatus.DRAFT)
-                .build();
+    private Project(String title, String description) {
+        this.title = title;
+        this.description = description;
+        this.status = ProjectStatus.DRAFT;
+        this.isPublic = false;
+        this.viewCount = 0;
     }
 
-    // =========================
-    // 비즈니스 로직
-    // =========================
+    public static Project createDraft(String title, String description) {
+        return new Project(title, description);
+    }
 
     public void update(
             String title,
             String description,
             String content,
-            String thumbnailUrl
+            String thumbnail
     ) {
         this.title = title;
         this.description = description;
         this.content = content;
-        this.thumbnailUrl = thumbnailUrl;
+        this.thumbnail = thumbnail;
     }
 
     public void publish() {
@@ -84,11 +79,28 @@ public class Project extends BaseTimeEntity {
         this.isPublic = true;
     }
 
-    public void makePrivate() {
-        this.isPublic = false;
-    }
-
     public void increaseViewCount() {
         this.viewCount++;
+    }
+
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    public boolean isDeleted() {
+        return deletedAt != null;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 }

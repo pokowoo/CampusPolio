@@ -129,6 +129,10 @@ public enum ErrorCode {
             HttpStatus.BAD_REQUEST,
             "파일 크기 제한을 초과했습니다."
     ),
+    PROJECT_PUBLISH_FORBIDDEN(
+            HttpStatus.FORBIDDEN,
+            "대학 인증 사용자만 프로젝트를 발행할 수 있습니다."
+    ),
 
     // ======================
     // COMMON
