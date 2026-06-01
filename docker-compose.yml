@@ -2,23 +2,6 @@ version: '3.9'
 
 services:
 
-  mysql:
-    image: mysql:8.0
-    container_name: campus-mysql
-
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-
-    ports:
-      - "3306:3306"
-
-    command:
-      --default-authentication-plugin=mysql_native_password
-
-    volumes:
-      - mysql-data:/var/lib/mysql
-
   redis:
     image: redis:7
     container_name: campus-redis
@@ -27,23 +10,22 @@ services:
       - "6379:6379"
 
   backend:
-    build: .
+    image: pokowoo/campuspolio:latest
     container_name: campus-backend
 
     depends_on:
-      - mysql
       - redis
 
     environment:
-      DB_HOST: mysql
-      DB_NAME: ${MYSQL_DATABASE}
+      DB_HOST: ${DB_HOST}
+      DB_NAME: ${DB_NAME}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
+
       REDIS_HOST: redis
+      REDIS_PORT: 6379
+
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
 
     ports:
       - "8080:8080"
-
-volumes:
-  mysql-data:
