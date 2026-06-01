@@ -10,7 +10,7 @@ public class HelloController {
 
     @GetMapping("/")
     public String hello() {
-        return "https 테스트입니당 Hello World";
+        return "스웨거 테스트 Hello World";
     }
 
 }
