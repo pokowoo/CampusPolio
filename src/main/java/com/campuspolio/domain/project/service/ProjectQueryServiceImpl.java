@@ -12,7 +12,14 @@ import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.campuspolio.domain.profile.entity.UserProfile;
+import com.campuspolio.domain.profile.repository.UserProfileRepository;
+import com.campuspolio.domain.project.dto.response.ProjectUserResponse;
+import com.campuspolio.domain.project.entity.UserProject;
+import com.campuspolio.domain.project.repository.ProjectLikeRepository;
+import com.campuspolio.domain.project.repository.ProjectTagRepository;
+import com.campuspolio.domain.project.repository.UserProjectRepository;
+import com.campuspolio.domain.user.entity.User;
 import java.util.List;
 
 @Service
@@ -20,7 +27,10 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class ProjectQueryServiceImpl
         implements ProjectQueryService {
-
+    private final ProjectTagRepository projectTagRepository;
+    private final UserProjectRepository userProjectRepository;
+    private final UserProfileRepository userProfileRepository;
+    private final ProjectLikeRepository projectLikeRepository;
     private final ProjectRepository projectRepository;
 
     @Override
@@ -74,19 +84,58 @@ public class ProjectQueryServiceImpl
         List<ProjectSearchResponse> content =
                 result.getContent()
                         .stream()
-                        .map(project ->
-                                new ProjectSearchResponse(
-                                        project.getId(),
-                                        project.getTitle(),
-                                        project.getDescription(),
-                                        project.getThumbnail(),
-                                        List.of(),
-                                        List.of(),
-                                        project.getViewCount(),
-                                        0,
-                                        false
-                                )
-                        )
+                        .map(project -> {
+
+                            List<String> tags =
+                                    projectTagRepository
+                                            .findAllByProject(project)
+                                            .stream()
+                                            .map(projectTag ->
+                                                    projectTag.getTag().getTagName()
+                                            )
+                                            .toList();
+
+                            List<ProjectUserResponse> users =
+                                    userProjectRepository
+                                            .findAllByProject(project)
+                                            .stream()
+                                            .map(userProject -> {
+
+                                                User user =
+                                                        userProject.getUser();
+
+                                                String name =
+                                                        userProfileRepository
+                                                                .findByUser(user)
+                                                                .map(UserProfile::getName)
+                                                                .orElse("이름없음");
+
+                                                return new ProjectUserResponse(
+                                                        user.getId(),
+                                                        name,
+                                                        userProject.getRole()
+                                                );
+                                            })
+                                            .toList();
+
+                            long likeCount =
+                                    projectLikeRepository
+                                            .countByProject(project);
+
+                            boolean isLiked = false;
+
+                            return new ProjectSearchResponse(
+                                    project.getId(),
+                                    project.getTitle(),
+                                    project.getDescription(),
+                                    project.getThumbnail(),
+                                    tags,
+                                    users,
+                                    project.getViewCount(),
+                                    likeCount,
+                                    isLiked
+                            );
+                        })
                         .toList();
 
         return new ProjectSearchPageResponse(
