@@ -131,7 +131,7 @@ public class ProjectService {
 
         if (!user.isUniversityVerified()) {
             throw new CustomException(
-                    ErrorCode.UNAUTHORIZED
+                    ErrorCode.PROJECT_PUBLISH_FORBIDDEN
             );
         }
 
