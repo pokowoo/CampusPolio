@@ -1,17 +1,27 @@
 package com.campuspolio.domain.project.repository;
 
 import com.campuspolio.domain.project.entity.Project;
-import com.campuspolio.domain.project.entity.ProjectStatus;
+import com.campuspolio.domain.project.entity.UserProject;
+import com.campuspolio.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface ProjectRepository extends JpaRepository<Project, Long> {
+public interface UserProjectRepository
+        extends JpaRepository<UserProject, Long> {
 
-    List<Project> findByStatus(ProjectStatus status);
+    Optional<UserProject> findByUserAndProject(
+            User user,
+            Project project
+    );
 
-    Optional<Project> findByProjectIdAndDeletedAtIsNull(Long projectId);
+    List<UserProject> findAllByUser_Id(
+            Long userId
+    );
 
-    List<Project> findByStatusAndDeletedAtIsNull(ProjectStatus status);
+    List<UserProject> findAllByProject(
+            Project project
+    );
+
 }

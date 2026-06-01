@@ -1,118 +1,105 @@
 package com.campuspolio.domain.project.entity;
 
-import com.campuspolio.global.entity.BaseTimeEntity;
+import com.campuspolio.domain.user.entity.User;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Builder
+@Table(
+        name = "user_project",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uq_user_project",
+                        columnNames = {
+                                "user_id",
+                                "project_id"
+                        }
+                )
+        }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
-@Table(name = "projects")
-public class Project extends BaseTimeEntity {
+public class UserProject {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "project_id")
-    private Long projectId;
+    @Column(name = "user_project_id")
+    private Long id;
 
-    @Column(nullable = false, length = 255)
-    private String title;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "user_id",
+            nullable = false
+    )
+    private User user;
 
-    @Column(length = 500)
-    private String description;
-
-    @Lob
-    @Column(columnDefinition = "LONGTEXT")
-    private String content;
-
-    @Column(name = "thumbnail_url", length = 500)
-    private String thumbnailUrl;
-
-    @Column(name = "is_public", nullable = false)
-    private boolean isPublic;
-
-    @Column(name = "view_count", nullable = false)
-    private int viewCount;
-
-    @Column(name = "like_count", nullable = false)
-    private int likeCount;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "project_id",
+            nullable = false
+    )
+    private Project project;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private ProjectStatus status;
+    @Column(nullable = false)
+    private UserProjectRole role;
 
-    // soft delete
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
-    // =========================
-    // 생성 메서드
-    // =========================
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
 
-    public static Project createDraft(
-            String title,
-            String description
+    private UserProject(
+            User user,
+            Project project,
+            UserProjectRole role
     ) {
-        return Project.builder()
-                .title(title)
-                .description(description)
-                .content("")
-                .thumbnailUrl(null)
-                .isPublic(false)
-                .viewCount(0)
-                .likeCount(0)
-                .status(ProjectStatus.DRAFT)
-                .deletedAt(null)
-                .build();
+        this.user = user;
+        this.project = project;
+        this.role = role;
     }
 
-    // =========================
-    // 비즈니스 로직
-    // =========================
-
-    public void update(
-            String title,
-            String description,
-            String content,
-            String thumbnailUrl
+    public static UserProject owner(
+            User user,
+            Project project
     ) {
-        this.title = title;
-        this.description = description;
-        this.content = content;
-        this.thumbnailUrl = thumbnailUrl;
+        return new UserProject(
+                user,
+                project,
+                UserProjectRole.OWNER
+        );
     }
 
-    public void publish() {
-        this.status = ProjectStatus.PUBLISHED;
-        this.isPublic = true;
+    public static UserProject member(
+            User user,
+            Project project
+    ) {
+        return new UserProject(
+                user,
+                project,
+                UserProjectRole.MEMBER
+        );
     }
 
-    public void makePublic() {
-        this.isPublic = true;
+    public boolean isOwner() {
+        return role == UserProjectRole.OWNER;
     }
 
-    public void makePrivate() {
-        this.isPublic = false;
+    @PrePersist
+    protected void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+
+        this.createdAt = now;
+        this.updatedAt = now;
     }
 
-    public void increaseViewCount() {
-        this.viewCount++;
-    }
-
-    public void delete() {
-        this.deletedAt = LocalDateTime.now();
-        this.isPublic = false;
-    }
-
-    public boolean isDeleted() {
-        return this.deletedAt != null;
-    }
-
-    public boolean isActive() {
-        return this.deletedAt == null;
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 }
