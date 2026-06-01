@@ -52,4 +52,4 @@ jobs:
 
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/campuspolio:latest
 
-            sudo docker compose up -d --force-recreated
+            sudo docker compose up -d --force-recreate
