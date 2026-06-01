@@ -11,10 +11,10 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Table(
-        name = "user_project",
+        name = "project_like",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "uq_user_project",
+                        name = "uq_project_like",
                         columnNames = {
                                 "user_id",
                                 "project_id"
@@ -23,11 +23,11 @@ import java.time.LocalDateTime;
         }
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserProject {
+public class ProjectLike {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_project_id")
+    @Column(name = "like_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -44,62 +44,29 @@ public class UserProject {
     )
     private Project project;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private UserProjectRole role;
-
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
-
-    private UserProject(
+    private ProjectLike(
             User user,
-            Project project,
-            UserProjectRole role
+            Project project
     ) {
         this.user = user;
         this.project = project;
-        this.role = role;
     }
 
-    public static UserProject owner(
+    public static ProjectLike create(
             User user,
             Project project
     ) {
-        return new UserProject(
+        return new ProjectLike(
                 user,
-                project,
-                UserProjectRole.OWNER
+                project
         );
-    }
-
-    public static UserProject member(
-            User user,
-            Project project
-    ) {
-        return new UserProject(
-                user,
-                project,
-                UserProjectRole.MEMBER
-        );
-    }
-
-    public boolean isOwner() {
-        return role == UserProjectRole.OWNER;
     }
 
     @PrePersist
     protected void onCreate() {
-        LocalDateTime now = LocalDateTime.now();
-
-        this.createdAt = now;
-        this.updatedAt = now;
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now();
     }
 }

@@ -6,11 +6,18 @@ import com.campuspolio.domain.project.entity.UserProjectRole;
 import java.time.LocalDateTime;
 
 public record MyProjectResponse(
+
         Long projectId,
+
         String title,
-        String thumbnailUrl,
-        LocalDateTime updatedAt,
+
+        String thumbnail,
+
         ProjectStatus status,
-        UserProjectRole role
+
+        UserProjectRole role,
+
+        LocalDateTime updatedAt
+
 ) {
 }

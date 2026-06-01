@@ -13,7 +13,7 @@ public interface ProjectTagRepository
 
     void deleteAllByProject(Project project);
 
-    boolean existsByProject_ProjectIdAndTag_TagId(
+    boolean existsByProject_IdAndTag_Id(
             Long projectId,
             Long tagId
     );

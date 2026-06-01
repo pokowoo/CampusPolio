@@ -50,7 +50,10 @@ public class Project {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    private Project(String title, String description) {
+    private Project(
+            String title,
+            String description
+    ) {
         this.title = title;
         this.description = description;
         this.status = ProjectStatus.DRAFT;
@@ -58,7 +61,10 @@ public class Project {
         this.viewCount = 0;
     }
 
-    public static Project createDraft(String title, String description) {
+    public static Project createDraft(
+            String title,
+            String description
+    ) {
         return new Project(title, description);
     }
 
@@ -77,6 +83,10 @@ public class Project {
     public void publish() {
         this.status = ProjectStatus.PUBLISHED;
         this.isPublic = true;
+    }
+
+    public void makePrivate() {
+        this.isPublic = false;
     }
 
     public void increaseViewCount() {

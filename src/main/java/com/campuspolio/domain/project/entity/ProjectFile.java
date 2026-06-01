@@ -19,7 +19,7 @@ public class ProjectFile {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_id", nullable = false)
+    @JoinColumn(name = "project_id")
     private Project project;
 
     @Column(name = "original_name", nullable = false)
@@ -28,7 +28,7 @@ public class ProjectFile {
     @Column(name = "file_url", nullable = false, length = 1000)
     private String fileUrl;
 
-    @Column(name = "content_type", nullable = false)
+    @Column(name = "content_type", nullable = false, length = 100)
     private String contentType;
 
     @Column(name = "file_size", nullable = false)
@@ -44,13 +44,11 @@ public class ProjectFile {
     private LocalDateTime deletedAt;
 
     private ProjectFile(
-            Project project,
             String originalName,
             String fileUrl,
             String contentType,
             Long fileSize
     ) {
-        this.project = project;
         this.originalName = originalName;
         this.fileUrl = fileUrl;
         this.contentType = contentType;
@@ -59,14 +57,12 @@ public class ProjectFile {
     }
 
     public static ProjectFile create(
-            Project project,
             String originalName,
             String fileUrl,
             String contentType,
             Long fileSize
     ) {
         return new ProjectFile(
-                project,
                 originalName,
                 fileUrl,
                 contentType,
@@ -74,7 +70,8 @@ public class ProjectFile {
         );
     }
 
-    public void connect() {
+    public void connect(Project project) {
+        this.project = project;
         this.connected = true;
     }
 
