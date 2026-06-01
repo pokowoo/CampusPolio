@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Table(
         name = "portfolio",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_portfolios_slug", columnNames = "slug")
+                @UniqueConstraint(name = "uk_portfolio_slug", columnNames = "slug")
         }
 )
 public class Portfolio extends BaseTimeEntity {

@@ -313,7 +313,7 @@ public class PortfolioService {
         User user = findActiveUser(userId);
         Portfolio portfolio = findActivePortfolio(portfolioId);
 
-        // 정책: 포트폴리오 프로젝트 구성 변경은 본인만 가능
+        // 정책: 포트폴리오 수정은 본인만 가능
         validatePortfolioOwner(portfolio, user);
 
         List<Long> removeProjectIds = distinctIds(request.remove());
