@@ -39,3 +39,4 @@ springdoc:
   api-docs:
     enabled: true
 
+  override-with-generic-response: false
