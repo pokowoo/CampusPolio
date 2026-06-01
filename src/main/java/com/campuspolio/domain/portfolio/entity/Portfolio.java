@@ -13,9 +13,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(
-        name = "portfolios",
+        name = "portfolio",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_portfolios_slug", columnNames = "slug")
+                @UniqueConstraint(name = "uk_portfolio_slug", columnNames = "slug")
         }
 )
 public class Portfolio extends BaseTimeEntity {
