@@ -11,7 +11,8 @@ import com.campuspolio.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import lombok.extern.slf4j.Slf4j;
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -21,6 +22,8 @@ public class AuthService {
 
     @Transactional
     public LoginResponse login(LoginRequest request) {
+        log.info("idToken={}", request.idToken());
+
 
         GoogleUserInfo googleUserInfo = googleOAuthClient.getUserInfo(request.idToken());
 
