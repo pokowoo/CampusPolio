@@ -33,10 +33,10 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Docker image build
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/campuspolio .
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/campuspolio:latest .
 
       - name: Docker Hub push
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/campuspolio
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/campuspolio:latest
 
       - name: EC2 자동배포
         uses: appleboy/ssh-action@v1.0.3
