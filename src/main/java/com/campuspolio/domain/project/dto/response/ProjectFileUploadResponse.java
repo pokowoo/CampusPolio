@@ -1,4 +1,10 @@
 package com.campuspolio.domain.project.dto.response;
 
-public class ProjectFileUploadResponse {
+public record ProjectFileUploadResponse(
+
+        Long fileId,
+
+        String fileUrl
+
+) {
 }

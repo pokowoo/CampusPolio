@@ -7,7 +7,7 @@ import com.campuspolio.domain.portfolio.repository.PortfolioProjectRepository;
 import com.campuspolio.domain.portfolio.repository.PortfolioRepository;
 import com.campuspolio.domain.project.entity.Project;
 import com.campuspolio.domain.project.entity.ProjectStatus;
-import com.campuspolio.domain.project.repository.ProjectMemberRepository;
+import com.campuspolio.domain.project.repository.UserProjectRepository;
 import com.campuspolio.domain.project.repository.ProjectRepository;
 import com.campuspolio.domain.user.entity.User;
 import com.campuspolio.domain.user.repository.UserRepository;
@@ -40,7 +40,7 @@ public class PortfolioService {
 
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
-    private final ProjectMemberRepository projectMemberRepository;
+    private final UserProjectRepository userProjectRepository;
     private final PortfolioRepository portfolioRepository;
     private final PortfolioProjectRepository portfolioProjectRepository;
 
@@ -250,7 +250,7 @@ public class PortfolioService {
         if (Boolean.TRUE.equals(request.isPublic())) {
             /*
              * 정책:
-             * 공개 포트폴리오는 공개 + 발행 프로젝트를 1개 이상 포함해야 한다.
+             * 공개 포트폴리오는 공개 + 발행 + 삭제되지 않은 프로젝트를 1개 이상 포함해야 한다.
              */
             if (!hasVisibleProject(portfolio)) {
                 throw new CustomException(ErrorCode.PORTFOLIO_PUBLIC_PROJECT_REQUIRED);
@@ -391,7 +391,7 @@ public class PortfolioService {
                 portfolioProjectRepository.findAllByPortfolioOrderByDisplayOrderAsc(portfolio);
 
         List<Long> currentProjectIds = portfolioProjects.stream()
-                .map(portfolioProject -> portfolioProject.getProject().getProjectId())
+                .map(portfolioProject -> portfolioProject.getProject().getId())
                 .toList();
 
         List<Long> requestedProjectIds = request.projectOrder();
@@ -403,7 +403,7 @@ public class PortfolioService {
 
         Map<Long, PortfolioProject> portfolioProjectMap = portfolioProjects.stream()
                 .collect(Collectors.toMap(
-                        portfolioProject -> portfolioProject.getProject().getProjectId(),
+                        portfolioProject -> portfolioProject.getProject().getId(),
                         portfolioProject -> portfolioProject
                 ));
 
@@ -437,7 +437,7 @@ public class PortfolioService {
     }
 
     private Project findActiveProject(Long projectId) {
-        return projectRepository.findByProjectIdAndDeletedAtIsNull(projectId)
+        return projectRepository.findByIdAndDeletedAtIsNull(projectId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PROJECT_NOT_FOUND));
     }
 
@@ -464,10 +464,9 @@ public class PortfolioService {
             Project project,
             User user
     ) {
-        boolean accessible = projectMemberRepository.existsByProjectAndUser(
-                project,
-                user
-        );
+        boolean accessible = userProjectRepository
+                .findByUserAndProject(user, project)
+                .isPresent();
 
         if (!accessible) {
             throw new CustomException(ErrorCode.PROJECT_FORBIDDEN);
@@ -578,7 +577,7 @@ public class PortfolioService {
      * 3. PUBLISHED 상태
      */
     private boolean isVisiblePortfolioProject(Project project) {
-        return project.isActive()
+        return !project.isDeleted()
                 && project.isPublic()
                 && project.getStatus() == ProjectStatus.PUBLISHED;
     }
@@ -620,10 +619,10 @@ public class PortfolioService {
         Project project = portfolioProject.getProject();
 
         return new PortfolioDetailProjectResponse(
-                project.getProjectId(),
+                project.getId(),
                 project.getTitle(),
                 project.getDescription(),
-                project.getThumbnailUrl(),
+                project.getThumbnail(),
                 portfolioProject.getDisplayOrder()
         );
     }

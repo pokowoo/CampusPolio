@@ -14,16 +14,23 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI campusPolioOpenAPI() {
 
-        Server server = new Server();
-        server.setUrl("https://api.campuspolio.cloud");
+        OpenAPI openAPI = new OpenAPI();
 
-        return new OpenAPI()
-                .servers(List.of(server))
-                .info(
-                        new Info()
-                                .title("CampusPolio API")
-                                .description("CampusPolio 백엔드 API 명세서")
-                                .version("v1.0.0")
-                );
+        openAPI.setServers(
+                List.of(
+                        new Server()
+                                .url("https://api.campuspolio.cloud")
+                                .description("Production Server")
+                )
+        );
+
+        openAPI.setInfo(
+                new Info()
+                        .title("CampusPolio API")
+                        .description("CampusPolio 백엔드 API 명세서")
+                        .version("v1.0.0")
+        );
+
+        return openAPI;
     }
 }

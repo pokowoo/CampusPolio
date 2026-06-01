@@ -9,9 +9,17 @@ import java.util.List;
 public interface ProjectTagRepository
         extends JpaRepository<ProjectTag, Long> {
 
-    List<ProjectTag> findAllByProject(Project project);
+    List<ProjectTag> findAllByProject(
+            Project project
+    );
 
-    void deleteAllByProject(Project project);
+    List<ProjectTag> findAllByTag_TagName(
+            String tagName
+    );
+
+    void deleteAllByProject(
+            Project project
+    );
 
     boolean existsByProject_IdAndTag_Id(
             Long projectId,

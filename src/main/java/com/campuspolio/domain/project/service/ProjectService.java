@@ -2,8 +2,10 @@ package com.campuspolio.domain.project.service;
 
 import com.campuspolio.domain.project.dto.request.ProjectCreateRequest;
 import com.campuspolio.domain.project.dto.request.ProjectPublishRequest;
+import com.campuspolio.domain.project.dto.request.ProjectUpdateRequest;
 import com.campuspolio.domain.project.dto.response.MyProjectResponse;
 import com.campuspolio.domain.project.dto.response.ProjectCreateResponse;
+import com.campuspolio.domain.project.dto.response.ProjectUpdateResponse;
 import com.campuspolio.domain.project.entity.*;
 import com.campuspolio.domain.project.repository.*;
 import com.campuspolio.domain.user.entity.User;
@@ -38,7 +40,9 @@ public class ProjectService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() ->
-                        new CustomException(ErrorCode.USER_NOT_FOUND));
+                        new CustomException(
+                                ErrorCode.USER_NOT_FOUND
+                        ));
 
         Project project = Project.createDraft(
                 request.title(),
@@ -48,7 +52,10 @@ public class ProjectService {
         projectRepository.save(project);
 
         UserProject owner =
-                UserProject.owner(user, project);
+                UserProject.owner(
+                        user,
+                        project
+                );
 
         userProjectRepository.save(owner);
 
@@ -66,7 +73,9 @@ public class ProjectService {
     ) {
 
         List<UserProject> userProjects =
-                userProjectRepository.findAllByUser_Id(userId);
+                userProjectRepository.findAllByUser_Id(
+                        userId
+                );
 
         List<MyProjectResponse> result =
                 new ArrayList<>();
@@ -106,10 +115,15 @@ public class ProjectService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() ->
-                        new CustomException(ErrorCode.USER_NOT_FOUND));
+                        new CustomException(
+                                ErrorCode.USER_NOT_FOUND
+                        ));
 
         Project project =
-                projectRepository.findByIdAndDeletedAtIsNull(projectId)
+                projectRepository
+                        .findByIdAndDeletedAtIsNull(
+                                projectId
+                        )
                         .orElseThrow(() ->
                                 new CustomException(
                                         ErrorCode.PROJECT_NOT_FOUND
@@ -117,7 +131,10 @@ public class ProjectService {
 
         UserProject userProject =
                 userProjectRepository
-                        .findByUserAndProject(user, project)
+                        .findByUserAndProject(
+                                user,
+                                project
+                        )
                         .orElseThrow(() ->
                                 new CustomException(
                                         ErrorCode.PROJECT_FORBIDDEN
@@ -150,12 +167,76 @@ public class ProjectService {
         project.publish();
     }
 
+    /**
+     * 프로젝트 수정
+     */
+    public ProjectUpdateResponse updateProject(
+            Long userId,
+            Long projectId,
+            ProjectUpdateRequest request
+    ) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() ->
+                        new CustomException(
+                                ErrorCode.USER_NOT_FOUND
+                        ));
+
+        Project project =
+                projectRepository
+                        .findByIdAndDeletedAtIsNull(
+                                projectId
+                        )
+                        .orElseThrow(() ->
+                                new CustomException(
+                                        ErrorCode.PROJECT_NOT_FOUND
+                                ));
+
+        UserProject userProject =
+                userProjectRepository
+                        .findByUserAndProject(
+                                user,
+                                project
+                        )
+                        .orElseThrow(() ->
+                                new CustomException(
+                                        ErrorCode.PROJECT_FORBIDDEN
+                                ));
+
+        if (!userProject.isOwner()) {
+            throw new CustomException(
+                    ErrorCode.PROJECT_FORBIDDEN
+            );
+        }
+
+        project.update(
+                request.title(),
+                request.description(),
+                request.content(),
+                request.thumbnail()
+        );
+
+        saveTags(
+                project,
+                request.tags()
+        );
+
+        return new ProjectUpdateResponse(
+                project.getId()
+        );
+    }
+
+    /**
+     * 태그 저장
+     */
     private void saveTags(
             Project project,
             List<String> tagNames
     ) {
 
-        projectTagRepository.deleteAllByProject(project);
+        projectTagRepository.deleteAllByProject(
+                project
+        );
 
         if (tagNames == null) {
             return;
@@ -163,12 +244,18 @@ public class ProjectService {
 
         for (String tagName : tagNames) {
 
-            Tag tag = tagRepository
-                    .findByTagName(tagName)
-                    .orElseGet(() ->
-                            tagRepository.save(
-                                    Tag.create(tagName)
-                            ));
+            Tag tag =
+                    tagRepository
+                            .findByTagName(
+                                    tagName
+                            )
+                            .orElseGet(() ->
+                                    tagRepository.save(
+                                            Tag.create(
+                                                    tagName
+                                            )
+                                    )
+                            );
 
             projectTagRepository.save(
                     ProjectTag.create(
