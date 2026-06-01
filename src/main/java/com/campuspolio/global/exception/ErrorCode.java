@@ -19,6 +19,15 @@ public enum ErrorCode {
             HttpStatus.BAD_REQUEST,
             "Google 계정에서 이메일을 가져올 수 없습니다."
     ),
+    S3_UPLOAD_FAILED(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            "S3 업로드에 실패했습니다."
+    ),
+
+    PROJECT_FILE_NOT_FOUND(
+            HttpStatus.NOT_FOUND,
+            "파일을 찾을 수 없습니다."
+    ),
 
     UNAUTHORIZED(
             HttpStatus.UNAUTHORIZED,
