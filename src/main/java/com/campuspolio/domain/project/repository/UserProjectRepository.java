@@ -23,5 +23,4 @@ public interface UserProjectRepository
     List<UserProject> findAllByProject(
             Project project
     );
-
 }
