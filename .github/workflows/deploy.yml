@@ -3,7 +3,7 @@ name: Deploy Spring Boot
 on:
   push:
     branches:
-      - feature/projectt
+      - feature/
 
 jobs:
   deploy:
