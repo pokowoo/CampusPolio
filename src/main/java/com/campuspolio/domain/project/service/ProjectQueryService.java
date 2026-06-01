@@ -1,4 +1,12 @@
 package com.campuspolio.domain.project.service;
 
-public class ProjectQueryService {
+import com.campuspolio.domain.project.dto.request.ProjectSearchCondition;
+import com.campuspolio.domain.project.dto.response.ProjectSearchPageResponse;
+
+public interface ProjectQueryService {
+
+    ProjectSearchPageResponse search(
+            Long loginUserId,
+            ProjectSearchCondition condition
+    );
 }

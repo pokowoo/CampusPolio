@@ -1,4 +1,26 @@
 package com.campuspolio.domain.project.dto.response;
 
-public class ProjectSearchResponse {
+import java.util.List;
+
+public record ProjectSearchResponse(
+
+        Long projectId,
+
+        String title,
+
+        String description,
+
+        String thumbnailUrl,
+
+        List<String> tags,
+
+        List<ProjectUserResponse> users,
+
+        int viewCount,
+
+        long likeCount,
+
+        boolean isLiked
+
+) {
 }

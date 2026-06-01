@@ -19,4 +19,9 @@ public interface UserProjectRepository
     List<UserProject> findAllByUser_Id(
             Long userId
     );
+
+    List<UserProject> findAllByProject(
+            Project project
+    );
+
 }
