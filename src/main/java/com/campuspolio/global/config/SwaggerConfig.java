@@ -11,7 +11,6 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI campusPolioOpenAPI() {
-
         return new OpenAPI()
 
                 .addServersItem(
