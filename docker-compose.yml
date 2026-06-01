@@ -1,23 +1,36 @@
-version: '3.9'
+version: "3.8"
 
 services:
+  backend:
+    image: woojinlee2/campuspolio:latest   # ✅ 이게 핵심
+    container_name: campus-backend
 
-  mysql:
-    image: mysql:8.0
-    container_name: campus-mysql
+    depends_on:
+      - redis
 
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+      SPRING_PROFILES_ACTIVE: prod
+      JAVA_OPTS: >
+        -Dsun.net.inetaddr.ttl=0
+        -Dsun.net.inetaddr.negative.ttl=0
+
+      DEBUG: true
 
     ports:
-      - "3306:3306"
+      - "8080:8080"
 
-    command:
-      --default-authentication-plugin=mysql_native_password
-
-    volumes:
-      - mysql-data:/var/lib/mysql
+    restart: always
 
   redis:
     image: redis:7
@@ -26,24 +39,4 @@ services:
     ports:
       - "6379:6379"
 
-  backend:
-    build: .
-    container_name: campus-backend
-
-    depends_on:
-      - mysql
-      - redis
-
-    environment:
-      DB_HOST: mysql
-      DB_NAME: ${MYSQL_DATABASE}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
-      REDIS_ENDPOINT: redis
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-
-    ports:
-      - "8080:8080"
-
-volumes:
-  mysql-data:
+    restart: always

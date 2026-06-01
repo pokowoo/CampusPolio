@@ -1,31 +1,32 @@
 package com.campuspolio.domain.project.entity;
 
-import com.campuspolio.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Builder
+@Table(name = "project_file")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
-@Table(name = "project_files")
-public class ProjectFile extends BaseTimeEntity {
+public class ProjectFile {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "project_file_id")
-    private Long projectFileId;
+    @Column(name = "file_id")
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")
     private Project project;
 
-    @Column(name = "file_url", nullable = false, length = 500)
-    private String fileUrl;
+    @Column(name = "original_name", nullable = false)
+    private String originalName;
 
-    @Column(name = "original_file_name", nullable = false, length = 255)
-    private String originalFileName;
+    @Column(name = "file_url", nullable = false, length = 1000)
+    private String fileUrl;
 
     @Column(name = "content_type", nullable = false, length = 100)
     private String contentType;
@@ -33,35 +34,53 @@ public class ProjectFile extends BaseTimeEntity {
     @Column(name = "file_size", nullable = false)
     private Long fileSize;
 
-    // orphan cleanup 용도
-    @Column(nullable = false)
+    @Column(name = "is_connected", nullable = false)
     private boolean connected;
 
-    // =========================
-    // 생성 메서드
-    // =========================
+    @Column(name = "uploaded_at", nullable = false)
+    private LocalDateTime uploadedAt;
 
-    public static ProjectFile create(
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
+    private ProjectFile(
+            String originalName,
             String fileUrl,
-            String originalFileName,
             String contentType,
             Long fileSize
     ) {
-        return ProjectFile.builder()
-                .fileUrl(fileUrl)
-                .originalFileName(originalFileName)
-                .contentType(contentType)
-                .fileSize(fileSize)
-                .connected(false)
-                .build();
+        this.originalName = originalName;
+        this.fileUrl = fileUrl;
+        this.contentType = contentType;
+        this.fileSize = fileSize;
+        this.connected = false;
     }
 
-    // =========================
-    // 비즈니스 로직
-    // =========================
+    public static ProjectFile create(
+            String originalName,
+            String fileUrl,
+            String contentType,
+            Long fileSize
+    ) {
+        return new ProjectFile(
+                originalName,
+                fileUrl,
+                contentType,
+                fileSize
+        );
+    }
 
     public void connect(Project project) {
         this.project = project;
         this.connected = true;
+    }
+
+    public void softDelete() {
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        this.uploadedAt = LocalDateTime.now();
     }
 }

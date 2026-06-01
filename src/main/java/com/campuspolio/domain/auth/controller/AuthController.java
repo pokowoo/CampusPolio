@@ -65,4 +65,21 @@ public class AuthController {
 
         return ApiResponse.success(null);
     }
+    @Operation(
+            summary = "테스트 로그인",
+            description = "개발용 로그인 API"
+    )
+    @PostMapping("/test-login/{userId}")
+    public ApiResponse<Void> testLogin(
+            @PathVariable Long userId,
+            HttpSession session
+    ) {
+
+        session.setAttribute(
+                SessionConst.LOGIN_USER_ID,
+                userId
+        );
+
+        return ApiResponse.success(null);
+    }
 }

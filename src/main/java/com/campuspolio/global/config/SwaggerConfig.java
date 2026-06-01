@@ -19,9 +19,11 @@ public class SwaggerConfig {
 
         return new OpenAPI()
                 .servers(List.of(server))
-                .info(new Info()
-                        .title("CampusPolio API")
-                        .description("CampusPolio 백엔드 API 명세서")
-                        .version("v1.0.0"));
+                .info(
+                        new Info()
+                                .title("CampusPolio API")
+                                .description("CampusPolio 백엔드 API 명세서")
+                                .version("v1.0.0")
+                );
     }
 }

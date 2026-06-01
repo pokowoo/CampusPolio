@@ -129,6 +129,10 @@ public enum ErrorCode {
             HttpStatus.BAD_REQUEST,
             "파일 크기 제한을 초과했습니다."
     ),
+    PROJECT_PUBLISH_FORBIDDEN(
+            HttpStatus.FORBIDDEN,
+            "대학 인증 사용자만 프로젝트를 발행할 수 있습니다."
+    ),
 
     // ======================
     // PORTFOLIO
@@ -183,6 +187,21 @@ public enum ErrorCode {
     // COMMON
     // ======================
 
+    PROJECT_NOT_VERIFIED(
+            HttpStatus.FORBIDDEN,
+            "대학 인증 후 등록 가능합니다."
+    ),
+
+    PROJECT_CONTENT_REQUIRED(
+            HttpStatus.BAD_REQUEST,
+            "프로젝트 내용은 필수입니다."
+    ),
+
+    PROJECT_TAG_LIMIT_EXCEEDED(
+            HttpStatus.BAD_REQUEST,
+            "태그는 최대 10개까지 가능합니다."
+    )
+    ,
     INTERNAL_SERVER_ERROR(
             HttpStatus.INTERNAL_SERVER_ERROR,
             "서버 오류가 발생했습니다."
@@ -196,4 +215,5 @@ public enum ErrorCode {
         this.status = status;
         this.message = message;
     }
+
 }

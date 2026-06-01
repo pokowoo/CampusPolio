@@ -1,5 +1,6 @@
 package com.campuspolio.domain.project.entity;
 
+import com.campuspolio.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -10,31 +11,31 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Table(
-        name = "project_tag",
+        name = "project_like",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "uq_project_tag",
+                        name = "uq_project_like",
                         columnNames = {
-                                "tag_id",
+                                "user_id",
                                 "project_id"
                         }
                 )
         }
 )
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ProjectTag {
+public class ProjectLike {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "project_tag_id")
+    @Column(name = "like_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
-            name = "tag_id",
+            name = "user_id",
             nullable = false
     )
-    private Tag tag;
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
@@ -46,20 +47,20 @@ public class ProjectTag {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    private ProjectTag(
-            Tag tag,
+    private ProjectLike(
+            User user,
             Project project
     ) {
-        this.tag = tag;
+        this.user = user;
         this.project = project;
     }
 
-    public static ProjectTag create(
-            Tag tag,
+    public static ProjectLike create(
+            User user,
             Project project
     ) {
-        return new ProjectTag(
-                tag,
+        return new ProjectLike(
+                user,
                 project
         );
     }
