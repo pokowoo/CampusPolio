@@ -9,6 +9,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Table(name = "project")
@@ -88,6 +90,10 @@ public class Project {
 
     public void publish() {
         this.status = ProjectStatus.PUBLISHED;
+        this.isPublic = true;
+    }
+
+    public void makePublic() {
         this.isPublic = true;
     }
 
