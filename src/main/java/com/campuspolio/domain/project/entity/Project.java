@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -49,7 +51,11 @@ public class Project {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
-
+    @OneToMany(
+            mappedBy = "project",
+            fetch = FetchType.LAZY
+    )
+    private List<ProjectTag> projectTags = new ArrayList<>();
     private Project(
             String title,
             String description
@@ -113,4 +119,5 @@ public class Project {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
 }

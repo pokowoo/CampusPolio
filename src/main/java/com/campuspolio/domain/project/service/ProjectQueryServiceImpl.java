@@ -55,15 +55,15 @@ public class ProjectQueryServiceImpl
                 );
 
         Specification<Project> spec =
-                Specification
-                        .where(
-                                ProjectSpecification.publishedOnly()
+                Specification.allOf(
+                        ProjectSpecification.publishedOnly(),
+                        ProjectSpecification.titleContains(
+                                condition.keyword()
+                        ),
+                        ProjectSpecification.hasTags(
+                                condition.tags()
                         )
-                        .and(
-                                ProjectSpecification.titleContains(
-                                        condition.keyword()
-                                )
-                        );
+                );
 
         Page<Project> result =
                 projectRepository.findAll(
