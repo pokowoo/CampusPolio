@@ -28,6 +28,7 @@ public class EmailAuthService {
 
     private final UserRepository userRepository;
     private final EmailVerificationRepository emailVerificationRepository;
+    private final EmailService emailService;
 
     @Transactional
     public EmailAuthResponse sendCode(Long userId, EmailSendRequest request) {
@@ -46,7 +47,8 @@ public class EmailAuthService {
         EmailVerification emailVerification = EmailVerification.create(email, code, expiresAt);
         emailVerificationRepository.save(emailVerification);
 
-        log.info("[이메일 인증번호] email={}, code={}, expiresAt={}", email, code, expiresAt);
+        emailService.sendAuthCode(email, code);
+        log.info("[이메일 인증번호 발송] email={}, expiresAt={}", email, expiresAt);
 
         return new EmailAuthResponse("인증번호가 발송되었습니다.");
     }
