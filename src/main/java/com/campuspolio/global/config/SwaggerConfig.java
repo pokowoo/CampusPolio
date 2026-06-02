@@ -20,7 +20,11 @@ public class SwaggerConfig {
                 List.of(
                         new Server()
                                 .url("https://api.campuspolio.cloud")
-                                .description("Production Server")
+                                .description("Production Server"),
+
+                        new Server()
+                                .url("http://localhost:8080")
+                                .description("Local Server")
                 )
         );
 

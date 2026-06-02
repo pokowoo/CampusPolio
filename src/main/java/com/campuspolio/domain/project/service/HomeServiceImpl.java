@@ -108,7 +108,9 @@ public class HomeServiceImpl implements HomeService {
 
         long likeCount =
                 projectLikeRepository
-                        .countByProject(project);
+                        .countByProject_Id(
+                                project.getId()
+                        );
 
         return new HomeProjectResponse(
                 project.getId(),
