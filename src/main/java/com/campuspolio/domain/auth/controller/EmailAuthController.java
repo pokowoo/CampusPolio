@@ -25,7 +25,7 @@ public class EmailAuthController {
             description = """
                     사용자가 입력한 대학 이메일(.ac.kr)로 인증번호를 발송합니다
                     현재 구현에서는 실제 SMTP 발송 대신 서버 로그에 인증번호를 출력합니다.
-                    대학 이메일(.ac.kr)만 인증할 수 있습니다.
+                    대학 이메일(.ac.kr)만 인증할 수 있습니다. 
                     """
     )
     @io.swagger.v3.oas.annotations.responses.ApiResponse(

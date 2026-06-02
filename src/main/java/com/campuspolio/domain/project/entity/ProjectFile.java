@@ -25,17 +25,17 @@ public class ProjectFile {
     @Column(name = "original_name", nullable = false)
     private String originalName;
 
-    @Column(name = "file_url", nullable = false, length = 1000)
+    @Column(name = "file_url", nullable = false)
     private String fileUrl;
 
-    @Column(name = "content_type", nullable = false, length = 100)
+    @Column(name = "content_type", nullable = false)
     private String contentType;
 
     @Column(name = "file_size", nullable = false)
     private Long fileSize;
 
     @Column(name = "is_connected", nullable = false)
-    private boolean connected;
+    private boolean isConnected;
 
     @Column(name = "uploaded_at", nullable = false)
     private LocalDateTime uploadedAt;
@@ -44,25 +44,29 @@ public class ProjectFile {
     private LocalDateTime deletedAt;
 
     private ProjectFile(
+            Project project,
             String originalName,
             String fileUrl,
             String contentType,
             Long fileSize
     ) {
+        this.project = project;
         this.originalName = originalName;
         this.fileUrl = fileUrl;
         this.contentType = contentType;
         this.fileSize = fileSize;
-        this.connected = false;
+        this.isConnected = true;
     }
 
     public static ProjectFile create(
+            Project project,
             String originalName,
             String fileUrl,
             String contentType,
             Long fileSize
     ) {
         return new ProjectFile(
+                project,
                 originalName,
                 fileUrl,
                 contentType,
@@ -70,12 +74,7 @@ public class ProjectFile {
         );
     }
 
-    public void connect(Project project) {
-        this.project = project;
-        this.connected = true;
-    }
-
-    public void softDelete() {
+    public void delete() {
         this.deletedAt = LocalDateTime.now();
     }
 

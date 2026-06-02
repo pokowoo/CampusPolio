@@ -1,17 +1,15 @@
 package com.campuspolio.domain.project.repository;
 
-import com.campuspolio.domain.project.entity.Project;
 import com.campuspolio.domain.project.entity.ProjectLike;
-import com.campuspolio.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ProjectLikeRepository
         extends JpaRepository<ProjectLike, Long> {
 
-    long countByProject(Project project);
+    long countByProject_Id(Long projectId);
 
-    boolean existsByUserAndProject(
-            User user,
-            Project project
+    boolean existsByUser_IdAndProject_Id(
+            Long userId,
+            Long projectId
     );
 }

@@ -15,9 +15,27 @@ public enum ErrorCode {
             "유효하지 않은 Google 토큰입니다."
     ),
 
+
     GOOGLE_EMAIL_NOT_FOUND(
             HttpStatus.BAD_REQUEST,
             "Google 계정에서 이메일을 가져올 수 없습니다."
+    ),
+    PROJECT_REVIEW_PARSE_ERROR(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            "AI 리뷰 결과를 처리하는 중 오류가 발생했습니다."
+    ),
+    S3_UPLOAD_FAILED(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            "S3 업로드에 실패했습니다."
+    ),
+    PROJECT_REVIEW_FILE_NOT_FOUND(
+            HttpStatus.BAD_REQUEST,
+            "코드 리뷰 가능한 파일이 없습니다."
+    ),
+
+    PROJECT_FILE_NOT_FOUND(
+            HttpStatus.NOT_FOUND,
+            "파일을 찾을 수 없습니다."
     ),
 
     UNAUTHORIZED(

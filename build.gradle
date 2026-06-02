@@ -19,6 +19,9 @@ repositories {
 
 dependencies {
 
+    // AWS S3
+    implementation 'software.amazon.awssdk:s3:2.32.8'
+
     // Spring
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
@@ -39,6 +42,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.session:spring-session-data-redis'
 
+    // Mail
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
     // MySQL
     runtimeOnly 'com.mysql:mysql-connector-j'
 
@@ -58,6 +64,7 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
 tasks.withType(Test) {
     useJUnitPlatform()
     systemProperty 'file.encoding', 'UTF-8'

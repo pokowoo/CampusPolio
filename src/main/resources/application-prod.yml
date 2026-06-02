@@ -22,6 +22,18 @@ spring:
 
   session:
     store-type: redis
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
 
 logging:
   level:
@@ -32,4 +44,23 @@ google:
     client-id: ${GOOGLE_CLIENT_ID}
 server:
   forward-headers-strategy: framework
+springdoc:
+  swagger-ui:
+    disable-swagger-default-url: true
 
+  api-docs:
+    enabled: true
+
+  override-with-generic-response: false
+cloud:
+  aws:
+    region: ${AWS_REGION}
+
+    s3:
+      bucket: ${AWS_S3_BUCKET}
+
+    credentials:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
+claude:
+  api-key: ${CLAUDE_API_KEY}

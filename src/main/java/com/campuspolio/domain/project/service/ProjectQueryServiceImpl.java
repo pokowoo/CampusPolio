@@ -1,25 +1,23 @@
 package com.campuspolio.domain.project.service;
 
+import com.campuspolio.domain.profile.entity.UserProfile;
+import com.campuspolio.domain.profile.repository.UserProfileRepository;
 import com.campuspolio.domain.project.dto.request.ProjectSearchCondition;
-import com.campuspolio.domain.project.dto.response.ProjectSearchPageResponse;
-import com.campuspolio.domain.project.dto.response.ProjectSearchResponse;
+import com.campuspolio.domain.project.dto.response.*;
 import com.campuspolio.domain.project.entity.Project;
 import com.campuspolio.domain.project.entity.ProjectFilterType;
-import com.campuspolio.domain.project.repository.ProjectRepository;
+import com.campuspolio.domain.project.entity.UserProject;
+import com.campuspolio.domain.project.repository.*;
 import com.campuspolio.domain.project.specification.ProjectSpecification;
+import com.campuspolio.domain.user.entity.User;
+import com.campuspolio.global.exception.CustomException;
+import com.campuspolio.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.campuspolio.domain.profile.entity.UserProfile;
-import com.campuspolio.domain.profile.repository.UserProfileRepository;
-import com.campuspolio.domain.project.dto.response.ProjectUserResponse;
-import com.campuspolio.domain.project.entity.UserProject;
-import com.campuspolio.domain.project.repository.ProjectLikeRepository;
-import com.campuspolio.domain.project.repository.ProjectTagRepository;
-import com.campuspolio.domain.project.repository.UserProjectRepository;
-import com.campuspolio.domain.user.entity.User;
+
 import java.util.List;
 
 @Service
@@ -27,11 +25,13 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class ProjectQueryServiceImpl
         implements ProjectQueryService {
+
+    private final ProjectRepository projectRepository;
     private final ProjectTagRepository projectTagRepository;
     private final UserProjectRepository userProjectRepository;
     private final UserProfileRepository userProfileRepository;
     private final ProjectLikeRepository projectLikeRepository;
-    private final ProjectRepository projectRepository;
+    private final ProjectFileRepository projectFileRepository;
 
     @Override
     public ProjectSearchPageResponse search(
@@ -120,9 +120,9 @@ public class ProjectQueryServiceImpl
 
                             long likeCount =
                                     projectLikeRepository
-                                            .countByProject(project);
-
-                            boolean isLiked = false;
+                                            .countByProject_Id(
+                                                    project.getId()
+                                            );
 
                             return new ProjectSearchResponse(
                                     project.getId(),
@@ -133,7 +133,7 @@ public class ProjectQueryServiceImpl
                                     users,
                                     project.getViewCount(),
                                     likeCount,
-                                    isLiked
+                                    false
                             );
                         })
                         .toList();
@@ -144,6 +144,106 @@ public class ProjectQueryServiceImpl
                 result.getSize(),
                 result.getTotalElements(),
                 result.getTotalPages()
+        );
+    }
+
+    @Override
+    @Transactional
+    public ProjectDetailResponse getProjectDetail(
+            Long loginUserId,
+            Long projectId
+    ) {
+
+        Project project =
+                projectRepository
+                        .findByIdAndDeletedAtIsNull(
+                                projectId
+                        )
+                        .orElseThrow(() ->
+                                new CustomException(
+                                        ErrorCode.PROJECT_NOT_FOUND
+                                )
+                        );
+
+        project.increaseViewCount();
+
+        List<String> tags =
+                projectTagRepository
+                        .findAllByProject(project)
+                        .stream()
+                        .map(projectTag ->
+                                projectTag.getTag()
+                                        .getTagName()
+                        )
+                        .toList();
+
+        List<ProjectDetailUserResponse> users =
+                userProjectRepository
+                        .findAllByProject(project)
+                        .stream()
+                        .map(userProject -> {
+
+                            UserProfile profile =
+                                    userProfileRepository
+                                            .findByUserId(
+                                                    userProject
+                                                            .getUser()
+                                                            .getId()
+                                            )
+                                            .orElse(null);
+
+                            return new ProjectDetailUserResponse(
+                                    userProject.getUser().getId(),
+                                    profile != null
+                                            ? profile.getName()
+                                            : "알 수 없음",
+                                    userProject.getRole()
+                            );
+                        })
+                        .toList();
+
+        List<ProjectDetailFileResponse> files =
+                projectFileRepository
+                        .findAllByProjectAndDeletedAtIsNull(
+                                project
+                        )
+                        .stream()
+                        .map(file ->
+                                new ProjectDetailFileResponse(
+                                        file.getId(),
+                                        file.getOriginalName(),
+                                        file.getFileUrl()
+                                )
+                        )
+                        .toList();
+
+        long likeCount =
+                projectLikeRepository
+                        .countByProject_Id(
+                                projectId
+                        );
+
+        boolean isLiked =
+                loginUserId != null
+                        && projectLikeRepository
+                        .existsByUser_IdAndProject_Id(
+                                loginUserId,
+                                projectId
+                        );
+
+        return new ProjectDetailResponse(
+                project.getId(),
+                project.getTitle(),
+                project.getDescription(),
+                project.getContent(),
+                project.getThumbnail(),
+                tags,
+                users,
+                files,
+                project.getViewCount(),
+                likeCount,
+                isLiked,
+                project.getCreatedAt()
         );
     }
 }

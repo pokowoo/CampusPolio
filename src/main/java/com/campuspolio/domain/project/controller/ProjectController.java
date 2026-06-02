@@ -14,6 +14,8 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import com.campuspolio.domain.project.dto.request.ProjectUpdateRequest;
+import com.campuspolio.domain.project.dto.response.ProjectUpdateResponse;
 
 @Tag(name = "Project", description = "프로젝트 API")
 @RestController
@@ -89,4 +91,49 @@ public class ProjectController {
 
         return ApiResponse.success(null);
     }
+    @Operation(
+            summary = "프로젝트 수정",
+            description = """
+                프로젝트를 수정합니다.
+                OWNER만 가능합니다.
+                """
+    )
+    @PatchMapping("/{projectId}")
+    public ApiResponse<ProjectUpdateResponse> updateProject(
+
+            @PathVariable
+            Long projectId,
+
+            @Valid
+            @RequestBody
+            ProjectUpdateRequest request,
+
+            HttpSession session
+    ) {
+
+        Long loginUserId =
+                (Long) session.getAttribute(
+                        SessionConst.LOGIN_USER_ID
+                );
+
+        if (loginUserId == null) {
+            throw new CustomException(
+                    ErrorCode.UNAUTHORIZED
+            );
+        }
+
+        ProjectUpdateResponse response =
+                projectService.updateProject(
+                        loginUserId,
+                        projectId,
+                        request
+                );
+
+        return ApiResponse.success(
+                response
+        );
+    }
+
+
+
 }
