@@ -40,25 +40,14 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Debug repository paths
-        run: |
-          echo "Current directory:"
-          pwd
-          echo "Repository files:"
-          ls -la
-          echo "eks-lab files:"
-          ls -la eks-lab
-          echo "Dockerfile:"
-          ls -la eks-lab/hello-world
-      
       - name: Build Docker image
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build \
-            -t $REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
-            -t $REGISTRY/$ECR_REPOSITORY:latest \
+            -t "$REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" \
+            -t "$REGISTRY/$ECR_REPOSITORY:latest" \
             ./eks-lab/hello-world
 
       - name: Push Docker image to ECR
