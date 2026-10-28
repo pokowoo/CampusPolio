@@ -1,0 +1,59 @@
+
+name: Build and Push to Amazon ECR
+
+on:
+  push:
+    branches:
+      - feature/eks-cicd
+    paths:
+      - "eks-lab/hello-world/**"
+      - ".github/workflows/build-and-push-ecr.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: ap-northeast-2
+  ECR_REPOSITORY: campuspolio-hello
+
+jobs:
+  build-and-push:
+    name: Build Docker Image and Push to ECR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::034317881539:role/GitHubActions-ECR-Push-Role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker image
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build \
+            -t $REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            -t $REGISTRY/$ECR_REPOSITORY:latest \
+            ./eks-lab/hello-world
+
+      - name: Push Docker image to ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker push $REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $REGISTRY/$ECR_REPOSITORY:latest
