@@ -39,7 +39,8 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-       - name: Debug repository paths
+
+      - name: Debug repository paths
         run: |
           echo "Current directory:"
           pwd
@@ -49,6 +50,7 @@ jobs:
           ls -la eks-lab
           echo "Dockerfile:"
           ls -la eks-lab/hello-world
+      
       - name: Build Docker image
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
