@@ -23,7 +23,7 @@ spec:
         - name: hello-world
           image: 034317881539.dkr.ecr.ap-northeast-2.amazonaws.com/campuspolio-hello:6a537616ccdc5785736a30280ef92e809f86f6e3
           args:
-            - "-text=Hello from CampusPolio EKS!!!!"
+            - "-text=Hello from CampusPolio EKS!!!!test!!"
           ports:
             - containerPort: 5678
           resources:
