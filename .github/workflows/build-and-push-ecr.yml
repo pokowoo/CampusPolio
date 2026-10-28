@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
 
 env:
@@ -55,3 +55,20 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker push "$REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+      - name: Update Kubernetes manifest
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          sed -i "s|^[[:space:]]*image:.*|          image: $REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|" eks-lab/k8s/deployment.yaml
+
+      - name: Commit and push manifest update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add eks-lab/k8s/deployment.yaml
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: update hello-world image to ${GITHUB_SHA}"
+            git push
+          fi
