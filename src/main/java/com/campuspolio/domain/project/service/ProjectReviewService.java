@@ -29,6 +29,7 @@ public class ProjectReviewService {
     private final ProjectFileRepository projectFileRepository;
     private final ClaudeClient claudeClient;
     private final ObjectMapper objectMapper;
+    private final S3Uploader s3Uploader;
 
     private static final Set<String> CODE_EXTENSIONS =
             Set.of(
@@ -152,7 +153,7 @@ exampleCode는 최대 10줄만 작성하세요.
 
             String content =
                     downloadFile(
-                            file.getFileUrl()
+                            s3Uploader.getPresignedUrl(file.getS3Key())
                     );
 
             if (content.length() > 20000) {

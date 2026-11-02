@@ -19,8 +19,11 @@ repositories {
 
 dependencies {
 
-    // AWS S3
-    implementation 'software.amazon.awssdk:s3:2.32.8'
+    implementation platform('software.amazon.awssdk:bom:2.31.54')
+
+    implementation 'software.amazon.awssdk:s3'
+    implementation 'software.amazon.awssdk:sts'
+    implementation 'software.amazon.awssdk:url-connection-client'
 
     // Spring
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -59,6 +62,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
 }
 
 tasks.named('test') {

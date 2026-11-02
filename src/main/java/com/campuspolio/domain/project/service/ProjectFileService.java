@@ -1,3 +1,4 @@
+
 package com.campuspolio.domain.project.service;
 
 import com.campuspolio.domain.project.dto.response.ProjectFileResponse;
@@ -12,6 +13,7 @@ import com.campuspolio.domain.user.entity.User;
 import com.campuspolio.domain.user.repository.UserRepository;
 import com.campuspolio.global.exception.CustomException;
 import com.campuspolio.global.exception.ErrorCode;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,109 +32,89 @@ public class ProjectFileService {
     private final UserProjectRepository userProjectRepository;
     private final S3Uploader s3Uploader;
 
+    // 파일 업로드
     public ProjectFileUploadResponse uploadFile(
             Long loginUserId,
             Long projectId,
             MultipartFile file
     ) {
 
-        User user =
-                userRepository.findById(loginUserId)
-                        .orElseThrow(() ->
-                                new CustomException(
-                                        ErrorCode.USER_NOT_FOUND
-                                )
-                        );
+        User user = userRepository.findById(loginUserId)
+                .orElseThrow(() ->
+                        new CustomException(ErrorCode.USER_NOT_FOUND)
+                );
 
-        Project project =
-                projectRepository.findByIdAndDeletedAtIsNull(projectId)
-                        .orElseThrow(() ->
-                                new CustomException(
-                                        ErrorCode.PROJECT_NOT_FOUND
-                                )
-                        );
+        Project project = projectRepository
+                .findByIdAndDeletedAtIsNull(projectId)
+                .orElseThrow(() ->
+                        new CustomException(ErrorCode.PROJECT_NOT_FOUND)
+                );
 
         UserProject userProject =
-                userProjectRepository.findByUserAndProject(
-                                user,
-                                project
-                        )
+                userProjectRepository.findByUserAndProject(user, project)
                         .orElseThrow(() ->
-                                new CustomException(
-                                        ErrorCode.PROJECT_FORBIDDEN
-                                )
+                                new CustomException(ErrorCode.PROJECT_FORBIDDEN)
                         );
 
-        String fileUrl =
-                s3Uploader.upload(
-                        projectId,
-                        file
-                );
+        // S3에 파일 업로드 후 객체 Key 반환
+        String s3Key = s3Uploader.upload(projectId, file);
 
-        ProjectFile projectFile =
-                ProjectFile.create(
-                        project,
-                        file.getOriginalFilename(),
-                        fileUrl,
-                        file.getContentType(),
-                        file.getSize()
-                );
-
-        projectFileRepository.save(
-                projectFile
+        // 객체 Key를 DB에 저장
+        ProjectFile projectFile = ProjectFile.create(
+                project,
+                file.getOriginalFilename(),
+                s3Key,
+                file.getContentType(),
+                file.getSize()
         );
+
+        projectFileRepository.save(projectFile);
+
+        // 클라이언트에는 Presigned URL 반환
+        String fileUrl = s3Uploader.getPresignedUrl(s3Key);
 
         return new ProjectFileUploadResponse(
                 projectFile.getId(),
-                projectFile.getFileUrl()
+                fileUrl
         );
     }
 
+    // 프로젝트 파일 목록 조회
     @Transactional(readOnly = true)
-    public List<ProjectFileResponse> getFiles(
-            Long projectId
-    ) {
+    public List<ProjectFileResponse> getFiles(Long projectId) {
 
-        Project project =
-                projectRepository.findByIdAndDeletedAtIsNull(projectId)
-                        .orElseThrow(() ->
-                                new CustomException(
-                                        ErrorCode.PROJECT_NOT_FOUND
-                                )
-                        );
+        Project project = projectRepository
+                .findByIdAndDeletedAtIsNull(projectId)
+                .orElseThrow(() ->
+                        new CustomException(ErrorCode.PROJECT_NOT_FOUND)
+                );
 
         return projectFileRepository
-                .findAllByProjectAndDeletedAtIsNull(
-                        project
-                )
+                .findAllByProjectAndDeletedAtIsNull(project)
                 .stream()
-                .map(file ->
-                        new ProjectFileResponse(
-                                file.getId(),
-                                file.getOriginalName(),
-                                file.getFileUrl(),
-                                file.getContentType(),
-                                file.getFileSize()
-                        )
-                )
+                .map(file -> new ProjectFileResponse(
+                        file.getId(),
+                        file.getOriginalName(),
+                        s3Uploader.getPresignedUrl(file.getS3Key()),
+                        file.getContentType(),
+                        file.getFileSize()
+                ))
                 .toList();
     }
 
-    public void deleteFile(
-            Long fileId
-    ) {
+    // 파일 삭제
+    public void deleteFile(Long fileId) {
 
-        ProjectFile file =
-                projectFileRepository
-                        .findByIdAndDeletedAtIsNull(
-                                fileId
-                        )
-                        .orElseThrow(() ->
-                                new CustomException(
-                                        ErrorCode.PROJECT_FILE_NOT_FOUND
-                                )
-                        );
+        ProjectFile file = projectFileRepository
+                .findByIdAndDeletedAtIsNull(fileId)
+                .orElseThrow(() ->
+                        new CustomException(ErrorCode.PROJECT_FILE_NOT_FOUND)
+                );
 
+        // S3 실제 객체 삭제
+        s3Uploader.delete(file.getS3Key());
+
+        // DB Soft Delete
         file.delete();
     }
 }

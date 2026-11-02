@@ -10,7 +10,7 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     properties:
       hibernate:
         format_sql: true
@@ -54,13 +54,10 @@ springdoc:
   override-with-generic-response: false
 cloud:
   aws:
-    region: ${AWS_REGION}
-
+    region: ap-northeast-2
     s3:
-      bucket: ${AWS_S3_BUCKET}
+      bucket: campuspolio-storage-2026
 
-    credentials:
-      access-key: ${AWS_ACCESS_KEY}
-      secret-key: ${AWS_SECRET_KEY}
+
 claude:
   api-key: ${CLAUDE_API_KEY}

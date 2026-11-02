@@ -32,6 +32,7 @@ public class ProjectQueryServiceImpl
     private final UserProfileRepository userProfileRepository;
     private final ProjectLikeRepository projectLikeRepository;
     private final ProjectFileRepository projectFileRepository;
+    private final S3Uploader s3Uploader;
 
     @Override
     public ProjectSearchPageResponse search(
@@ -204,15 +205,13 @@ public class ProjectQueryServiceImpl
 
         List<ProjectDetailFileResponse> files =
                 projectFileRepository
-                        .findAllByProjectAndDeletedAtIsNull(
-                                project
-                        )
+                        .findAllByProjectAndDeletedAtIsNull(project)
                         .stream()
                         .map(file ->
                                 new ProjectDetailFileResponse(
                                         file.getId(),
                                         file.getOriginalName(),
-                                        file.getFileUrl()
+                                        s3Uploader.getPresignedUrl(file.getS3Key())
                                 )
                         )
                         .toList();

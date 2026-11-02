@@ -1,3 +1,4 @@
+
 package com.campuspolio.domain.project.entity;
 
 import jakarta.persistence.*;
@@ -25,8 +26,8 @@ public class ProjectFile {
     @Column(name = "original_name", nullable = false)
     private String originalName;
 
-    @Column(name = "file_url", nullable = false)
-    private String fileUrl;
+    @Column(name = "s3_key", nullable = false)
+    private String s3Key;
 
     @Column(name = "content_type", nullable = false)
     private String contentType;
@@ -46,13 +47,13 @@ public class ProjectFile {
     private ProjectFile(
             Project project,
             String originalName,
-            String fileUrl,
+            String s3Key,
             String contentType,
             Long fileSize
     ) {
         this.project = project;
         this.originalName = originalName;
-        this.fileUrl = fileUrl;
+        this.s3Key = s3Key;
         this.contentType = contentType;
         this.fileSize = fileSize;
         this.isConnected = true;
@@ -61,14 +62,14 @@ public class ProjectFile {
     public static ProjectFile create(
             Project project,
             String originalName,
-            String fileUrl,
+            String s3Key,
             String contentType,
             Long fileSize
     ) {
         return new ProjectFile(
                 project,
                 originalName,
-                fileUrl,
+                s3Key,
                 contentType,
                 fileSize
         );
