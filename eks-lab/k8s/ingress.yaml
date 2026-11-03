@@ -4,21 +4,26 @@ metadata:
   name: hello-world
   namespace: default
   annotations:
-    # AWS Load Balancer Controller가 인터넷용 ALB를 생성하도록 설정
+    # 인터넷 공개 ALB 생성
     alb.ingress.kubernetes.io/scheme: internet-facing
+    # Pod IP로 직접 트래픽 전달
     alb.ingress.kubernetes.io/target-type: ip
-    # HTTP로 먼저 연결을 확인합니다. HTTPS는 ACM 인증서 연결 후 추가합니다.
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+    # HTTP 80 및 HTTPS 443 리스너 생성
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    # ACM 인증서 연결
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-northeast-2:034317881539:certificate/d2711776-7aeb-4233-8cfc-ffb7c85fe906
+    # HTTP 요청을 HTTPS 443으로 리다이렉트
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
 spec:
   ingressClassName: alb
   rules:
-    - http:
+    - host: hello.campuspolio.cloud
+      http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                # 실제 Service 이름과 포트가 다르면 이 두 값을 수정해야 합니다.
                 name: hello-world
                 port:
                   number: 80
