@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   backend:
-    image: woojinlee2/campuspolio:latest   # ✅ 이게 핵심
+    image: woojinlee2/campuspolio:latest
     container_name: campus-backend
 
     depends_on:
@@ -17,15 +17,14 @@ services:
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
 
-      REDIS_HOST: ${REDIS_HOST}
+      REDIS_HOST: redis
       REDIS_PORT: 6379
 
       SPRING_PROFILES_ACTIVE: prod
+
       JAVA_OPTS: >
         -Dsun.net.inetaddr.ttl=0
         -Dsun.net.inetaddr.negative.ttl=0
-
-      DEBUG: true
 
     ports:
       - "8080:8080"
@@ -33,10 +32,15 @@ services:
     restart: always
 
   redis:
-    image: redis:7
+    image: redis:7-alpine
     container_name: campus-redis
 
-    ports:
-      - "6379:6379"
+    command: redis-server --appendonly yes
+
+    volumes:
+      - redis-data:/data
 
     restart: always
+
+volumes:
+  redis-data:
