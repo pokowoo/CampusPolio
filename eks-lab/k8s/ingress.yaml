@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hello-world
+  namespace: default
+  annotations:
+    # AWS Load Balancer Controller가 인터넷용 ALB를 생성하도록 설정
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    # HTTP로 먼저 연결을 확인합니다. HTTPS는 ACM 인증서 연결 후 추가합니다.
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+spec:
+  ingressClassName: alb
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                # 실제 Service 이름과 포트가 다르면 이 두 값을 수정해야 합니다.
+                name: hello-world
+                port:
+                  number: 80
