@@ -17,7 +17,7 @@ spec:
       serviceAccountName: campuspolio-backend-sa
       containers:
         - name: campuspolio-backend
-          image: 034317881539.dkr.ecr.ap-northeast-2.amazonaws.com/campuspolio-backend:19eaf5e
+          image: 034317881539.dkr.ecr.ap-northeast-2.amazonaws.com/campuspolio-backend:678b857531ddd5afa35fd520bb5f37396c3e1f8b
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
