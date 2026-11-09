@@ -61,3 +61,7 @@ cloud:
 
 claude:
   api-key: ${CLAUDE_API_KEY}
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expiration: 900000
+  refresh-token-expiration: 1209600000
