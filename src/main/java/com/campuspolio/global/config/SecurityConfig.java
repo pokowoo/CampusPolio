@@ -1,10 +1,15 @@
+
 package com.campuspolio.global.config;
 
+import com.campuspolio.global.security.JwtAuthenticationFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -12,26 +17,38 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                // CORS 활성화
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-                // REST API이므로 CSRF 비활성화
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http)
+            throws Exception {
+
+        http
+                .cors(cors ->
+                        cors.configurationSource(corsConfigurationSource())
+                )
+
+                // CSRF는 쿠키 기반 인증이므로 추후 방어 설정 적용
                 .csrf(csrf -> csrf.disable())
 
-                // 기본 로그인/Basic 인증 비활성화
                 .formLogin(form -> form.disable())
                 .httpBasic(httpBasic -> httpBasic.disable())
 
-                .authorizeHttpRequests(auth -> auth
-                        // OPTIONS preflight 허용
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS
+                        )
+                )
 
-                        // Swagger / OpenAPI 허용
+                .authorizeHttpRequests(auth -> auth
+
+                        .requestMatchers(HttpMethod.OPTIONS, "/**")
+                        .permitAll()
+
+                        // Swagger
                         .requestMatchers(
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
@@ -39,14 +56,20 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"
                         ).permitAll()
 
-                        // 인증 없이 접근 가능한 Auth API
+                        // 인증 관련 공개 API
                         .requestMatchers(
                                 "/api/auth/login",
+                                "/api/auth/refresh",
                                 "/api/auth/logout"
                         ).permitAll()
 
-                        // 현재는 컨트롤러 내부 세션 체크 또는 개발 단계이므로 전체 허용
-                        .anyRequest().permitAll()
+                        // 그 외 모든 API는 JWT 인증 필요
+                        .anyRequest().authenticated()
+                )
+
+                .addFilterBefore(
+                        jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class
                 );
 
         return http.build();
@@ -57,17 +80,14 @@ public class SecurityConfig {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        // 허용 Origin
         config.setAllowedOrigins(List.of(
                 "http://localhost:3000",
                 "http://localhost:8080",
                 "http://127.0.0.1:3000",
                 "http://127.0.0.1:5500",
-                "https://campus-polio.vercel.app",
-                "null"
+                "https://campus-polio.vercel.app"
         ));
 
-        // HTTP 메서드 허용
         config.setAllowedMethods(List.of(
                 "GET",
                 "POST",
@@ -77,22 +97,19 @@ public class SecurityConfig {
                 "OPTIONS"
         ));
 
-        // 모든 요청 헤더 허용
         config.setAllowedHeaders(List.of("*"));
 
-        // 쿠키/세션 허용
         config.setAllowCredentials(true);
 
-        // 프론트에서 읽을 수 있는 응답 헤더
         config.setExposedHeaders(List.of(
-                "Authorization",
-                "Set-Cookie"
+                "Authorization"
         ));
 
-        // preflight 캐시 시간
         config.setMaxAge(3600L);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
         source.registerCorsConfiguration("/**", config);
 
         return source;

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Google ID Token 발급 테스트</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;padding:30px 16px;display:grid;place-items:center;background:#f4f6fa;color:#172033;font-family:system-ui,sans-serif}
+main{width:min(100%,720px);background:white;padding:28px;border:1px solid #e4e8f0;border-radius:18px;box-shadow:0 12px 36px #14233c14}
+h1{margin:0 0 8px;font-size:25px}p{line-height:1.6;color:#586276}label{display:block;margin:20px 0 8px;font-weight:650}
+input,textarea{width:100%;padding:12px;border:1px solid #ccd3df;border-radius:9px;font:inherit}textarea{min-height:170px;resize:vertical;font:12px ui-monospace,monospace}
+button{border:0;border-radius:9px;padding:11px 16px;cursor:pointer;background:#1a73e8;color:white;font-weight:650}.secondary{background:#e9eef7;color:#24324a}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}.status{margin-top:18px;padding:12px;border-radius:9px;background:#f0f3f8;color:#48556b}
+.hint{font-size:13px}.hidden{display:none}.warning{border-left:4px solid #e0a126;padding:10px 12px;background:#fff8e8;color:#674b12;border-radius:6px}
+code{background:#f0f3f8;padding:2px 5px;border-radius:4px}
+</style></head>
+<body><main>
+<h1>Google ID Token 발급 테스트</h1>
+<p>Google 계정으로 로그인하면 ID Token을 발급받아 복사할 수 있습니다. 이 페이지는 토큰을 서버로 전송하거나 저장하지 않습니다.</p>
+<label for="clientId">Google OAuth Client ID</label>
+<input id="clientId" placeholder="예: 1234567890-xxxxx.apps.googleusercontent.com" autocomplete="off">
+<div class="row"><button id="initButton">Google 로그인 버튼 생성</button></div>
+<div id="googleButton" style="margin-top:16px"></div>
+<div id="status" class="status" role="status">Client ID를 입력한 뒤 로그인 버튼을 생성하세요.</div>
+<section id="result" class="hidden">
+<label for="token">Google ID Token</label><textarea id="token" readonly spellcheck="false"></textarea>
+<div class="row"><button id="copyButton">ID Token 복사</button><button id="clearButton" class="secondary">토큰 지우기</button></div>
+<p class="hint">복사한 토큰을 CampusPolio의 <code>POST /api/auth/login</code> 요청 본문에 넣으면 됩니다.</p>
+</section>
+<p class="warning hint">주의: Google Cloud Console의 OAuth 클라이언트에서 실제 실행 주소를 승인된 JavaScript 원본에 등록해야 합니다. 예를 들어 <code>http://localhost:5500</code>입니다. Client Secret은 입력하지 마세요.</p>
+<p class="hint">실행 방법: 이 파일이 있는 폴더에서 <code>python -m http.server 5500</code> 실행 후 <code>http://localhost:5500/google-id-token.html</code>에 접속하세요.</p>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+function setStatus(message){$('status').textContent=message}
+function handleCredentialResponse(response){
+ if(!response||!response.credential){setStatus('Google ID Token을 받지 못했습니다. OAuth 설정을 확인하세요.');return}
+ $('token').value=response.credential;$('result').classList.remove('hidden');setStatus('로그인 성공: Google ID Token을 발급받았습니다.')
+}
+$('initButton').addEventListener('click',()=>{
+ const clientId=$('clientId').value.trim();
+ if(!clientId){setStatus('Google OAuth Client ID를 입력하세요.');return}
+ if(!window.google||!google.accounts||!google.accounts.id){setStatus('Google 로그인 라이브러리를 불러오지 못했습니다. 인터넷 연결을 확인하고 새로고침하세요.');return}
+ $('googleButton').innerHTML='';$('result').classList.add('hidden');$('token').value='';
+ try{
+  google.accounts.id.initialize({client_id:clientId,callback:handleCredentialResponse,auto_select:false,cancel_on_tap_outside:true});
+  google.accounts.id.renderButton($('googleButton'),{type:'standard',theme:'outline',size:'large',text:'signin_with',shape:'rectangular',width:280});
+  setStatus('Google 로그인 버튼이 준비됐습니다. 버튼을 눌러 로그인하세요.')
+ }catch(error){setStatus('초기화 실패: '+(error.message||'OAuth 설정을 확인하세요.'))}
+});
+$('copyButton').addEventListener('click',async()=>{
+ try{await navigator.clipboard.writeText($('token').value);setStatus('ID Token을 클립보드에 복사했습니다.')}
+ catch{$('token').select();document.execCommand('copy');setStatus('ID Token 복사를 시도했습니다. 클립보드를 확인하세요.')}
+});
+$('clearButton').addEventListener('click',()=>{$('token').value='';$('result').classList.add('hidden');setStatus('화면의 토큰을 지웠습니다.')});
+</script></body></html>
