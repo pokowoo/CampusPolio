@@ -11,6 +11,8 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @Tag(name = "Portfolio", description = "포트폴리오 API")
 @RestController
@@ -100,32 +102,33 @@ public class PortfolioController {
     @Operation(
             summary = "slug 기반 포트폴리오 조회",
             description = """
-                    slug를 기준으로 포트폴리오를 조회합니다.
-                    
-                    정책:
-                    - 공개 포트폴리오는 비로그인 사용자도 접근 가능
-                    - 비공개 포트폴리오는 본인만 접근 가능
-                    - 비공개 포트폴리오에 타인이 접근하면 404 반환
-                    - 포트폴리오 상세에서는 공개 + 발행 상태의 프로젝트만 노출
-                    - soft delete된 포트폴리오와 프로젝트는 조회 제외
-                    """
-    )
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "포트폴리오 조회 성공")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 포트폴리오 또는 접근할 수 없는 비공개 포트폴리오")
-    public ApiResponse<PortfolioDetailResponse> getPortfolioBySlug(
-            @PathVariable String slug,
-            HttpSession session
-    ) {
-        /*
-         * 공개 포트폴리오는 비로그인도 접근 가능해야 하므로
-         * @AuthenticatedUser를 사용하지 않고 세션에서 직접 userId를 꺼낸다.
-         */
-        Long loginUserId = (Long) session.getAttribute(SessionConst.LOGIN_USER_ID);
+                slug를 기준으로 포트폴리오를 조회합니다.
 
-        PortfolioDetailResponse response = portfolioService.getPortfolioBySlug(
-                slug,
-                loginUserId
-        );
+                정책:
+                - 공개 포트폴리오는 비로그인 사용자도 접근 가능
+                - 비공개 포트폴리오는 본인만 접근 가능
+                - 비공개 포트폴리오에 타인이 접근하면 404 반환
+                - 포트폴리오 상세에서는 공개 + 발행 상태의 프로젝트만 노출
+                - soft delete된 포트폴리오와 프로젝트는 조회 제외
+                """
+    )
+    public ApiResponse<PortfolioDetailResponse> getPortfolioBySlug(
+            @PathVariable String slug
+    ) {
+        // JWT 인증 정보에서 로그인 사용자 ID 추출
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        Long loginUserId = null;
+
+        if (authentication != null
+                && authentication.isAuthenticated()
+                && authentication.getPrincipal() instanceof Long userId) {
+            loginUserId = userId;
+        }
+
+        PortfolioDetailResponse response =
+                portfolioService.getPortfolioBySlug(slug, loginUserId);
 
         return ApiResponse.success(response);
     }

@@ -62,9 +62,12 @@ public class SecurityConfig {
                                 "/api/auth/refresh",
                                 "/api/auth/logout"
                         ).permitAll()
+                        //비로그인 접근가능
+                        .requestMatchers(HttpMethod.GET, "/api/portfolios/*").permitAll()
 
                         // 그 외 모든 API는 JWT 인증 필요
                         .anyRequest().authenticated()
+
                 )
 
                 .addFilterBefore(

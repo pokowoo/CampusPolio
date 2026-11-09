@@ -1,27 +1,40 @@
+
 package com.campuspolio.domain.auth.controller;
 
+import com.campuspolio.domain.auth.dto.AuthTokenResult;
 import com.campuspolio.domain.auth.dto.LoginResponse;
 import com.campuspolio.domain.auth.service.AuthService;
-import com.campuspolio.global.security.SessionConst;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import com.campuspolio.global.security.JwtProvider;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(AuthController.class)
+@WebMvcTest(
+        controllers = AuthController.class,
+        properties = {
+                "jwt.access-token-expiration=900000",
+                "jwt.refresh-token-expiration=1209600000"
+        }
+)
 @AutoConfigureMockMvc(addFilters = false)
 class AuthControllerTest {
+    @MockitoBean
+    private JwtProvider jwtProvider;
 
     @Autowired
     private MockMvc mockMvc;
@@ -32,69 +45,114 @@ class AuthControllerTest {
     @Test
     @DisplayName("idToken이 없으면 400 Bad Request를 반환한다")
     void login_withoutIdToken_returnsBadRequest() throws Exception {
+
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                        {
-                          "idToken": ""
-                        }
-                        """))
+                                {
+                                  "idToken": ""
+                                }
+                                """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success").value(false));
     }
 
     @Test
-    @DisplayName("로그인 성공 시 userId를 세션에 저장하고 사용자 정보를 반환한다")
-    void login_success_setsSessionAndReturnsUserInfo() throws Exception {
+    @DisplayName("로그인 성공 시 사용자 정보와 JWT 쿠키를 반환한다")
+    void login_success_returnsUserInfoAndJwtCookies() throws Exception {
 
-        LoginResponse response = new LoginResponse(
+        LoginResponse loginResponse = new LoginResponse(
                 1L,
                 "user@korea.ac.kr",
                 false
         );
 
-        when(authService.login(any()))
-                .thenReturn(response);
+        AuthTokenResult tokenResult = new AuthTokenResult(
+                loginResponse,
+                "test-access-token",
+                "test-refresh-token"
+        );
 
-        mockMvc.perform(post("/api/auth/login")
+        when(authService.login(any()))
+                .thenReturn(tokenResult);
+
+        MvcResult result = mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                    {
-                      "idToken": "fake-google-id-token"
-                    }
-                    """))
+                                {
+                                  "idToken": "fake-google-id-token"
+                                }
+                                """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.id").value(1))
                 .andExpect(jsonPath("$.data.email").value("user@korea.ac.kr"))
                 .andExpect(jsonPath("$.data.universityVerified").value(false))
-                .andExpect(request().sessionAttribute(
-                        SessionConst.LOGIN_USER_ID,
-                        1L
-                ));
+                .andReturn();
+
+        List<String> setCookies =
+                result.getResponse().getHeaders(HttpHeaders.SET_COOKIE);
+
+        assertThat(setCookies)
+                .anySatisfy(cookie ->
+                        assertThat(cookie)
+                                .contains("accessToken=test-access-token")
+                                .contains("HttpOnly")
+                );
+
+        assertThat(setCookies)
+                .anySatisfy(cookie ->
+                        assertThat(cookie)
+                                .contains("refreshToken=test-refresh-token")
+                                .contains("HttpOnly")
+                );
+
+        verify(authService).login(any());
     }
 
     @Test
-    @DisplayName("세션이 있으면 로그아웃에 성공하고 세션을 무효화한다")
-    void logout_withSession_successAndInvalidatesSession() throws Exception {
+    @DisplayName("Refresh Token 쿠키가 있으면 로그아웃하고 JWT 쿠키를 삭제한다")
+    void logout_withRefreshToken_successAndDeletesCookies() throws Exception {
 
-        MockHttpSession session = new MockHttpSession();
-        session.setAttribute(SessionConst.LOGIN_USER_ID, 1L);
+        doNothing().when(authService).logout("test-refresh-token");
 
-        mockMvc.perform(post("/api/auth/logout")
-                        .session(session))
+        MvcResult result = mockMvc.perform(post("/api/auth/logout")
+                        .cookie(new Cookie(
+                                "refreshToken",
+                                "test-refresh-token"
+                        )))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true));
+                .andExpect(jsonPath("$.success").value(true))
+                .andReturn();
 
-        assertThat(session.isInvalid()).isTrue();
+        verify(authService).logout("test-refresh-token");
+
+        List<String> setCookies =
+                result.getResponse().getHeaders(HttpHeaders.SET_COOKIE);
+
+        assertThat(setCookies)
+                .anySatisfy(cookie ->
+                        assertThat(cookie)
+                                .contains("accessToken=")
+                                .contains("Max-Age=0")
+                );
+
+        assertThat(setCookies)
+                .anySatisfy(cookie ->
+                        assertThat(cookie)
+                                .contains("refreshToken=")
+                                .contains("Max-Age=0")
+                );
     }
 
     @Test
-    @DisplayName("세션이 없어도 로그아웃 요청은 오류 없이 처리된다")
-    void logout_withoutSession_success() throws Exception {
+    @DisplayName("Refresh Token 쿠키가 없어도 로그아웃 요청은 처리된다")
+    void logout_withoutRefreshToken_success() throws Exception {
 
         mockMvc.perform(post("/api/auth/logout"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
+
+        verify(authService).logout(null);
     }
 }

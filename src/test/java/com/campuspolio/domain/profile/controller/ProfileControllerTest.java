@@ -1,5 +1,6 @@
 package com.campuspolio.domain.profile.controller;
-
+import com.campuspolio.global.security.JwtProvider;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import com.campuspolio.domain.profile.dto.ProfileCreateRequest;
 import com.campuspolio.domain.profile.dto.ProfileCreateResponse;
 import com.campuspolio.domain.profile.dto.ProfileResponse;
@@ -39,7 +40,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         GlobalExceptionHandler.class
 })
 class ProfileControllerTest {
-
+    @MockitoBean
+    private JwtProvider jwtProvider;
     @Autowired
     private MockMvc mockMvc;
 

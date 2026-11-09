@@ -17,7 +17,8 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
+import com.campuspolio.global.security.JwtProvider;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -31,6 +32,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         AuthenticatedUserArgumentResolver.class
 })
 class EmailAuthControllerTest {
+    @MockitoBean
+    private JwtProvider jwtProvider;
 
     @Autowired
     private MockMvc mockMvc;

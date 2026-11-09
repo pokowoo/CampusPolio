@@ -16,7 +16,8 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
+import com.campuspolio.global.security.JwtProvider;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -35,7 +36,8 @@ class UserControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
-
+    @MockitoBean
+    private JwtProvider jwtProvider;
     @MockitoBean
     private UserService userService;
 

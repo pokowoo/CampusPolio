@@ -1,13 +1,18 @@
+
 package com.campuspolio.domain.auth.service;
 
 import com.campuspolio.domain.auth.client.GoogleOAuthClient;
+import com.campuspolio.domain.auth.dto.AuthTokenResult;
 import com.campuspolio.domain.auth.dto.GoogleUserInfo;
 import com.campuspolio.domain.auth.dto.LoginRequest;
 import com.campuspolio.domain.auth.dto.LoginResponse;
+import com.campuspolio.domain.auth.entity.RefreshToken;
+import com.campuspolio.domain.auth.repository.RefreshTokenRepository;
 import com.campuspolio.domain.user.entity.User;
 import com.campuspolio.domain.user.repository.UserRepository;
 import com.campuspolio.global.exception.CustomException;
 import com.campuspolio.global.exception.ErrorCode;
+import com.campuspolio.global.security.JwtProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,24 +21,45 @@ import java.lang.reflect.Field;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 class AuthServiceTest {
 
     private GoogleOAuthClient googleOAuthClient;
     private UserRepository userRepository;
+    private JwtProvider jwtProvider;
+    private RefreshTokenRepository refreshTokenRepository;
+
     private AuthService authService;
 
     @BeforeEach
     void setUp() {
         googleOAuthClient = mock(GoogleOAuthClient.class);
         userRepository = mock(UserRepository.class);
-        authService = new AuthService(googleOAuthClient, userRepository);
+        jwtProvider = mock(JwtProvider.class);
+        refreshTokenRepository = mock(RefreshTokenRepository.class);
+
+        authService = new AuthService(
+                googleOAuthClient,
+                userRepository,
+                jwtProvider,
+                refreshTokenRepository
+        );
+
+        // JWT 발급 결과 Mock
+        when(jwtProvider.generateAccessToken(anyLong()))
+                .thenReturn("test-access-token");
+
+        when(jwtProvider.generateRefreshToken(anyLong()))
+                .thenReturn("test-refresh-token");
+
+        when(jwtProvider.hashToken(anyString()))
+                .thenReturn("hashed-refresh-token");
     }
 
     @Test
-    @DisplayName("신규 Google 사용자가 로그인하면 유저를 생성하고 응답을 반환한다")
+    @DisplayName("신규 Google 사용자가 로그인하면 유저를 생성하고 토큰을 발급한다")
     void login_newUser_createsUser() throws Exception {
         String idToken = "fake-id-token";
         String googleId = "google-sub-123";
@@ -58,14 +84,23 @@ class AuthServiceTest {
                     return user;
                 });
 
-        LoginResponse response = authService.login(new LoginRequest(idToken));
+        AuthTokenResult result =
+                authService.login(new LoginRequest(idToken));
+
+        LoginResponse response = result.loginResponse();
 
         assertThat(response.id()).isEqualTo(1L);
         assertThat(response.email()).isEqualTo(email);
         assertThat(response.universityVerified()).isFalse();
 
+        assertThat(result.accessToken()).isEqualTo("test-access-token");
+        assertThat(result.refreshToken()).isEqualTo("test-refresh-token");
+
         verify(userRepository).findByGoogleId(googleId);
         verify(userRepository).save(any(User.class));
+        verify(jwtProvider).generateAccessToken(1L);
+        verify(jwtProvider).generateRefreshToken(1L);
+        verify(refreshTokenRepository).save(any(RefreshToken.class));
     }
 
     @Test
@@ -90,14 +125,21 @@ class AuthServiceTest {
         when(userRepository.findByGoogleId(googleId))
                 .thenReturn(Optional.of(existingUser));
 
-        LoginResponse response = authService.login(new LoginRequest(idToken));
+        AuthTokenResult result =
+                authService.login(new LoginRequest(idToken));
+
+        LoginResponse response = result.loginResponse();
 
         assertThat(response.id()).isEqualTo(1L);
         assertThat(response.email()).isEqualTo(email);
         assertThat(response.universityVerified()).isFalse();
 
+        assertThat(result.accessToken()).isEqualTo("test-access-token");
+        assertThat(result.refreshToken()).isEqualTo("test-refresh-token");
+
         verify(userRepository).findByGoogleId(googleId);
         verify(userRepository, never()).save(any(User.class));
+        verify(refreshTokenRepository).save(any(RefreshToken.class));
     }
 
     @Test
@@ -114,7 +156,9 @@ class AuthServiceTest {
                         null
                 ));
 
-        assertThatThrownBy(() -> authService.login(new LoginRequest(idToken)))
+        assertThatThrownBy(() ->
+                authService.login(new LoginRequest(idToken))
+        )
                 .isInstanceOf(CustomException.class)
                 .hasMessage(ErrorCode.GOOGLE_EMAIL_NOT_FOUND.getMessage());
     }
@@ -133,7 +177,9 @@ class AuthServiceTest {
                         null
                 ));
 
-        assertThatThrownBy(() -> authService.login(new LoginRequest(idToken)))
+        assertThatThrownBy(() ->
+                authService.login(new LoginRequest(idToken))
+        )
                 .isInstanceOf(CustomException.class)
                 .hasMessage(ErrorCode.INVALID_GOOGLE_TOKEN.getMessage());
     }
@@ -146,7 +192,9 @@ class AuthServiceTest {
         when(googleOAuthClient.getUserInfo(idToken))
                 .thenThrow(new CustomException(ErrorCode.INVALID_GOOGLE_TOKEN));
 
-        assertThatThrownBy(() -> authService.login(new LoginRequest(idToken)))
+        assertThatThrownBy(() ->
+                authService.login(new LoginRequest(idToken))
+        )
                 .isInstanceOf(CustomException.class)
                 .hasMessage(ErrorCode.INVALID_GOOGLE_TOKEN.getMessage());
 
@@ -162,7 +210,9 @@ class AuthServiceTest {
         when(googleOAuthClient.getUserInfo(idToken))
                 .thenThrow(new RuntimeException("Google API network error"));
 
-        assertThatThrownBy(() -> authService.login(new LoginRequest(idToken)))
+        assertThatThrownBy(() ->
+                authService.login(new LoginRequest(idToken))
+        )
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("Google API network error");
 
@@ -192,12 +242,15 @@ class AuthServiceTest {
         when(userRepository.save(any(User.class)))
                 .thenThrow(new RuntimeException("DB error"));
 
-        assertThatThrownBy(() -> authService.login(new LoginRequest(idToken)))
+        assertThatThrownBy(() ->
+                authService.login(new LoginRequest(idToken))
+        )
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("DB error");
 
         verify(userRepository).findByGoogleId(googleId);
         verify(userRepository).save(any(User.class));
+        verifyNoInteractions(refreshTokenRepository);
     }
 
     @Test
@@ -226,7 +279,10 @@ class AuthServiceTest {
         when(userRepository.findByGoogleId(googleId))
                 .thenReturn(Optional.of(deletedUser));
 
-        LoginResponse response = authService.login(new LoginRequest(idToken));
+        AuthTokenResult result =
+                authService.login(new LoginRequest(idToken));
+
+        LoginResponse response = result.loginResponse();
 
         assertThat(response.id()).isEqualTo(1L);
         assertThat(response.email()).isEqualTo(email);
@@ -235,6 +291,7 @@ class AuthServiceTest {
 
         verify(userRepository).findByGoogleId(googleId);
         verify(userRepository, never()).save(any(User.class));
+        verify(refreshTokenRepository).save(any(RefreshToken.class));
     }
 
     private void setId(User user, Long id) throws Exception {
