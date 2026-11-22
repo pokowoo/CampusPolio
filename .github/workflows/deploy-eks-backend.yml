@@ -4,7 +4,8 @@ name: Deploy Backend to EKS via ECR
 on:
   push:
     branches:
-      - feature/eks-cicd
+      #활성화 시 !!!! 없애기
+      - feature/eks-cicd!!!!
     paths:
       - "src/**"
       - "build.gradle"

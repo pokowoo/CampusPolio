@@ -1,5 +1,7 @@
+
 package com.campuspolio.global.exception;
 
+import com.campuspolio.global.response.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -18,11 +20,17 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(errorCode.getStatus())
-                .body(new ErrorResponse(false, errorCode.getMessage()));
+                .body(new ErrorResponse(
+                        false,
+                        errorCode.name(),
+                        errorCode.getMessage()
+                ));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException e) {
+    public ResponseEntity<ErrorResponse> handleValidationException(
+            MethodArgumentNotValidException e
+    ) {
         String message = e.getBindingResult()
                 .getAllErrors()
                 .get(0)
@@ -32,7 +40,11 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .badRequest()
-                .body(new ErrorResponse(false, message));
+                .body(new ErrorResponse(
+                        false,
+                        "VALIDATION_ERROR",
+                        message
+                ));
     }
 
     @ExceptionHandler(Exception.class)
@@ -42,12 +54,10 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .internalServerError()
-                .body(new ErrorResponse(false, "서버 오류가 발생했습니다."));
-    }
-
-    public record ErrorResponse(
-            boolean success,
-            String message
-    ) {
+                .body(new ErrorResponse(
+                        false,
+                        ErrorCode.INTERNAL_SERVER_ERROR.name(),
+                        ErrorCode.INTERNAL_SERVER_ERROR.getMessage()
+                ));
     }
 }
