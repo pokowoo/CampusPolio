@@ -6,11 +6,10 @@ import com.campuspolio.domain.project.dto.response.ProjectSearchPageResponse;
 import com.campuspolio.domain.project.entity.ProjectFilterType;
 import com.campuspolio.domain.project.service.ProjectQueryService;
 import com.campuspolio.global.response.ApiResponse;
-import com.campuspolio.global.security.SessionConst;
+import com.campuspolio.global.security.AuthenticatedUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -84,17 +83,10 @@ public class ProjectQueryController {
             @PathVariable
             Long projectId,
 
-            HttpSession session
+            // 공개 조회이므로 비로그인도 허용 (비로그인이면 null)
+            @AuthenticatedUser(required = false)
+            Long loginUserId
     ) {
-
-        Long loginUserId = null;
-
-        if (session != null) {
-            loginUserId =
-                    (Long) session.getAttribute(
-                            SessionConst.LOGIN_USER_ID
-                    );
-        }
 
         return ApiResponse.success(
                 projectQueryService.getProjectDetail(

@@ -3,13 +3,10 @@ package com.campuspolio.domain.project.controller;
 import com.campuspolio.domain.project.dto.response.ProjectFileResponse;
 import com.campuspolio.domain.project.dto.response.ProjectFileUploadResponse;
 import com.campuspolio.domain.project.service.ProjectFileService;
-import com.campuspolio.global.exception.CustomException;
-import com.campuspolio.global.exception.ErrorCode;
 import com.campuspolio.global.response.ApiResponse;
-import com.campuspolio.global.security.SessionConst;
+import com.campuspolio.global.security.AuthenticatedUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -38,19 +35,9 @@ public class ProjectFileController {
             @RequestPart("file")
             MultipartFile file,
 
-            HttpSession session
+            @AuthenticatedUser
+            Long loginUserId
     ) {
-
-        Long loginUserId =
-                (Long) session.getAttribute(
-                        SessionConst.LOGIN_USER_ID
-                );
-
-        if (loginUserId == null) {
-            throw new CustomException(
-                    ErrorCode.UNAUTHORIZED
-            );
-        }
 
         return ApiResponse.success(
                 projectFileService.uploadFile(

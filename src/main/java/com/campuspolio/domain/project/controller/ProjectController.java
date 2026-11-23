@@ -4,13 +4,10 @@ import com.campuspolio.domain.project.dto.request.ProjectCreateRequest;
 import com.campuspolio.domain.project.dto.request.ProjectPublishRequest;
 import com.campuspolio.domain.project.dto.response.ProjectCreateResponse;
 import com.campuspolio.domain.project.service.ProjectService;
-import com.campuspolio.global.exception.CustomException;
-import com.campuspolio.global.exception.ErrorCode;
 import com.campuspolio.global.response.ApiResponse;
-import com.campuspolio.global.security.SessionConst;
+import com.campuspolio.global.security.AuthenticatedUser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -37,18 +34,8 @@ public class ProjectController {
     @PostMapping
     public ApiResponse<ProjectCreateResponse> createProject(
             @Valid @RequestBody ProjectCreateRequest request,
-            HttpSession session
+            @AuthenticatedUser Long loginUserId
     ) {
-
-        Long loginUserId = (Long) session.getAttribute(
-                SessionConst.LOGIN_USER_ID
-        );
-
-        if (loginUserId == null) {
-            throw new CustomException(
-                    ErrorCode.UNAUTHORIZED
-            );
-        }
 
         ProjectCreateResponse response =
                 projectService.createProject(
@@ -70,18 +57,8 @@ public class ProjectController {
     public ApiResponse<Void> publishProject(
             @PathVariable Long projectId,
             @Valid @RequestBody ProjectPublishRequest request,
-            HttpSession session
+            @AuthenticatedUser Long loginUserId
     ) {
-
-        Long loginUserId = (Long) session.getAttribute(
-                SessionConst.LOGIN_USER_ID
-        );
-
-        if (loginUserId == null) {
-            throw new CustomException(
-                    ErrorCode.UNAUTHORIZED
-            );
-        }
 
         projectService.publishProject(
                 loginUserId,
@@ -108,19 +85,9 @@ public class ProjectController {
             @RequestBody
             ProjectUpdateRequest request,
 
-            HttpSession session
+            @AuthenticatedUser
+            Long loginUserId
     ) {
-
-        Long loginUserId =
-                (Long) session.getAttribute(
-                        SessionConst.LOGIN_USER_ID
-                );
-
-        if (loginUserId == null) {
-            throw new CustomException(
-                    ErrorCode.UNAUTHORIZED
-            );
-        }
 
         ProjectUpdateResponse response =
                 projectService.updateProject(

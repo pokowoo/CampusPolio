@@ -31,12 +31,19 @@ public class AuthenticatedUserArgumentResolver implements HandlerMethodArgumentR
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
 
-        if (authentication == null
-                || !authentication.isAuthenticated()
-                || !(authentication.getPrincipal() instanceof Long userId)) {
-            throw new CustomException(ErrorCode.UNAUTHORIZED);
+        if (authentication != null
+                && authentication.isAuthenticated()
+                && authentication.getPrincipal() instanceof Long userId) {
+            return userId;
         }
 
-        return userId;
+        AuthenticatedUser annotation =
+                parameter.getParameterAnnotation(AuthenticatedUser.class);
+
+        if (annotation != null && !annotation.required()) {
+            return null;
+        }
+
+        throw new CustomException(ErrorCode.UNAUTHORIZED);
     }
 }
