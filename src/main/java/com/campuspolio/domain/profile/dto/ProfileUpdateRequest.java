@@ -1,8 +1,11 @@
+
 package com.campuspolio.domain.profile.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 @Schema(description = "프로필 수정 요청")
@@ -12,9 +15,15 @@ public record ProfileUpdateRequest(
         @Size(max = 30, message = "이름은 30자 이하로 입력해주세요.")
         String name,
 
+
         @Schema(description = "닉네임", example = "길동이")
+        @Pattern(
+                regexp = ".*\\S.*",
+                message = "닉네임은 공백일 수 없습니다."
+        )
         @Size(max = 30, message = "닉네임은 30자 이하로 입력해주세요.")
         String nickname,
+
 
         @Schema(description = "자기소개", example = "백엔드 개발 및 AI 프로젝트를 진행합니다.")
         @Size(max = 500, message = "자기소개는 500자 이하로 입력해주세요.")
@@ -32,6 +41,10 @@ public record ProfileUpdateRequest(
         @Schema(
                 description = "프로필 이미지 URL",
                 example = "https://s3.amazonaws.com/profile.png"
+        )
+        @Pattern(
+                regexp = "^https?://\\S+$",
+                message = "프로필 이미지 URL 형식이 올바르지 않습니다."
         )
         String profileImage
 

@@ -471,4 +471,146 @@ class ProfileControllerTest {
                 .andExpect(jsonPath("$.message")
                         .value(ErrorCode.PROFILE_NOT_FOUND.getMessage()));
     }
+
+    @Test
+    @DisplayName("name이 최대 길이를 초과하면 프로필 수정 시 400을 반환한다")
+    void updateProfile_tooLongName_returnsBadRequest() throws Exception {
+
+        String longName = "가".repeat(31);
+
+        mockMvc.perform(patch("/api/profile")
+                        .cookie(validAccessToken(USER_ID))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "name": "%s"
+                                }
+                                """.formatted(longName)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false));
+    }
+
+    @Test
+    @DisplayName("major가 최대 길이를 초과하면 프로필 수정 시 400을 반환한다")
+    void updateProfile_tooLongMajor_returnsBadRequest() throws Exception {
+
+        String longMajor = "가".repeat(51);
+
+        mockMvc.perform(patch("/api/profile")
+                        .cookie(validAccessToken(USER_ID))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "major": "%s"
+                                }
+                                """.formatted(longMajor)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false));
+    }
+
+    @Test
+    @DisplayName("grade가 6을 초과하면 프로필 수정 시 400을 반환한다")
+    void updateProfile_exceedGrade_returnsBadRequest() throws Exception {
+
+        mockMvc.perform(patch("/api/profile")
+                        .cookie(validAccessToken(USER_ID))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "grade": 7
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false));
+    }
+
+    @Test
+    @DisplayName("nickname이 공백만 포함하면 프로필 수정 시 400을 반환한다")
+    void updateProfile_blankNickname_returnsBadRequest() throws Exception {
+
+        mockMvc.perform(patch("/api/profile")
+                        .cookie(validAccessToken(USER_ID))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "nickname": "   "
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false));
+    }
+
+    @Test
+    @DisplayName("잘못된 profileImage URL이면 프로필 수정 시 400을 반환한다")
+    void updateProfile_invalidProfileImage_returnsBadRequest() throws Exception {
+
+        mockMvc.perform(patch("/api/profile")
+                        .cookie(validAccessToken(USER_ID))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "profileImage": "not-a-valid-url"
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false));
+    }
+
+    @Test
+    @DisplayName("일부 필드만 전달해도 프로필 수정에 성공한다")
+    void updateProfile_partialRequest_success() throws Exception {
+
+        LocalDateTime updatedAt = LocalDateTime.of(2026, 11, 23, 14, 0);
+
+        when(profileService.updateProfile(
+                eq(USER_ID),
+                any(ProfileUpdateRequest.class)
+        )).thenReturn(new ProfileUpdateResponse(
+                USER_ID,
+                updatedAt,
+                "프로필 수정 완료"
+        ));
+
+        mockMvc.perform(patch("/api/profile")
+                        .cookie(validAccessToken(USER_ID))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "nickname": "새닉네임"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.userId").value(1))
+                .andExpect(jsonPath("$.data.message").value("프로필 수정 완료"));
+    }
+
+    @Test
+    @DisplayName("nickname을 생략하고 bio만 전달해도 프로필 수정에 성공한다")
+    void updateProfile_withoutNickname_success() throws Exception {
+
+        LocalDateTime updatedAt = LocalDateTime.of(2026, 11, 23, 14, 0);
+
+        when(profileService.updateProfile(
+                eq(USER_ID),
+                any(ProfileUpdateRequest.class)
+        )).thenReturn(new ProfileUpdateResponse(
+                USER_ID,
+                updatedAt,
+                "프로필 수정 완료"
+        ));
+
+        mockMvc.perform(patch("/api/profile")
+                        .cookie(validAccessToken(USER_ID))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                              "bio": "새로운 자기소개"
+                            }
+                            """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+    }
+
+
 }
