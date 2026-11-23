@@ -62,6 +62,7 @@ public class UserProfile {
     }
 
 
+
     public void update(
             String name,
             String nickname,
@@ -70,32 +71,43 @@ public class UserProfile {
             Integer grade,
             String profileImage
     ) {
-        if (name != null) {
+        boolean changed = false;
+
+        if (name != null && !name.equals(this.name)) {
             this.name = name;
+            changed = true;
         }
 
-        if (nickname != null) {
+        if (nickname != null && !nickname.equals(this.nickname)) {
             this.nickname = nickname;
+            changed = true;
         }
 
-        if (bio != null) {
+        if (bio != null && !bio.equals(this.bio)) {
             this.bio = bio;
+            changed = true;
         }
 
-        if (major != null) {
+        if (major != null && !major.equals(this.major)) {
             this.major = major;
+            changed = true;
         }
 
-        if (grade != null) {
+        if (grade != null && !grade.equals(this.grade)) {
             this.grade = grade;
+            changed = true;
         }
 
-        if (profileImage != null) {
+        if (profileImage != null && !profileImage.equals(this.profileImage)) {
             this.profileImage = profileImage;
+            changed = true;
         }
 
-        this.updatedAt = LocalDateTime.now();
+        if (changed) {
+            this.updatedAt = LocalDateTime.now();
+        }
     }
+
 
 
     @PrePersist
