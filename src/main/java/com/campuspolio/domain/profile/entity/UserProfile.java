@@ -61,6 +61,7 @@ public class UserProfile {
         return new UserProfile(user, nickname, bio);
     }
 
+
     public void update(
             String name,
             String nickname,
@@ -69,14 +70,33 @@ public class UserProfile {
             Integer grade,
             String profileImage
     ) {
-        this.name = name;
-        this.nickname = nickname;
-        this.bio = bio;
-        this.major = major;
-        this.grade = grade;
-        this.profileImage = profileImage;
+        if (name != null) {
+            this.name = name;
+        }
+
+        if (nickname != null) {
+            this.nickname = nickname;
+        }
+
+        if (bio != null) {
+            this.bio = bio;
+        }
+
+        if (major != null) {
+            this.major = major;
+        }
+
+        if (grade != null) {
+            this.grade = grade;
+        }
+
+        if (profileImage != null) {
+            this.profileImage = profileImage;
+        }
+
         this.updatedAt = LocalDateTime.now();
     }
+
 
     @PrePersist
     protected void onCreate() {

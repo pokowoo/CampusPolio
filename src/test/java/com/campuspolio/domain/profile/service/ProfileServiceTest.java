@@ -380,4 +380,127 @@ class ProfileServiceTest {
         idField.setAccessible(true);
         idField.set(profile, id);
     }
+
+    @Test
+    @DisplayName("탈퇴한 사용자는 프로필을 조회할 수 없다")
+    void getMyProfile_deletedUser_throwsException() throws Exception {
+        Long userId = 1L;
+        User user = User.createGoogleUser("user@korea.ac.kr", "google-123");
+        setId(user, userId);
+        user.withdraw();
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        assertThatThrownBy(() -> profileService.getMyProfile(userId))
+                .isInstanceOf(CustomException.class)
+                .hasMessage(ErrorCode.USER_NOT_FOUND.getMessage());
+
+        verify(userProfileRepository, never()).findByUserId(anyLong());
+    }
+
+    @Test
+    @DisplayName("탈퇴한 사용자는 프로필을 생성할 수 없다")
+    void createProfile_deletedUser_throwsException() throws Exception {
+        Long userId = 1L;
+        User user = User.createGoogleUser("user@korea.ac.kr", "google-123");
+        setId(user, userId);
+        user.withdraw();
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        assertThatThrownBy(() -> profileService.createProfile(
+                userId,
+                new ProfileCreateRequest("길동이", "백엔드 개발자")
+        ))
+                .isInstanceOf(CustomException.class)
+                .hasMessage(ErrorCode.USER_NOT_FOUND.getMessage());
+
+        verify(userProfileRepository, never()).save(any(UserProfile.class));
+    }
+
+    @Test
+    @DisplayName("탈퇴한 사용자는 프로필을 수정할 수 없다")
+    void updateProfile_deletedUser_throwsException() throws Exception {
+        Long userId = 1L;
+        User user = User.createGoogleUser("user@korea.ac.kr", "google-123");
+        setId(user, userId);
+        user.withdraw();
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        assertThatThrownBy(() -> profileService.updateProfile(
+                userId,
+                new ProfileUpdateRequest(
+                        "홍길동",
+                        "길동이",
+                        "백엔드 개발자",
+                        "컴퓨터공학과",
+                        4,
+                        null
+                )
+        ))
+                .isInstanceOf(CustomException.class)
+                .hasMessage(ErrorCode.USER_NOT_FOUND.getMessage());
+
+        verify(userProfileRepository, never()).findByUserId(anyLong());
+    }
+
+    @Test
+    @DisplayName("PATCH 요청에서 일부 필드만 전달하면 나머지 필드는 null로 변경된다")
+    void updateProfile_partialRequest_currentlyOverwritesOtherFieldsWithNull()
+            throws Exception {
+
+        Long userId = 1L;
+        User user = User.createGoogleUser("user@korea.ac.kr", "google-123");
+        setId(user, userId);
+
+        UserProfile profile = UserProfile.create(
+                user,
+                "기존닉네임",
+                "기존 자기소개"
+        );
+
+        profile.update(
+                "홍길동",
+                "기존닉네임",
+                "기존 자기소개",
+                "컴퓨터공학과",
+                4,
+                "https://example.com/profile.png"
+        );
+
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.of(user));
+
+        when(userProfileRepository.findByUserId(userId))
+                .thenReturn(Optional.of(profile));
+
+        profileService.updateProfile(
+                userId,
+                new ProfileUpdateRequest(
+                        null,
+                        "새닉네임",
+                        null,
+                        null,
+                        null,
+                        null
+                )
+        );
+
+        assertThat(profile.getNickname()).isEqualTo("새닉네임");
+
+        // 현재 구현의 동작을 확인하는 테스트.
+        // 아래 필드들이 null로 변경되는 것이 현재 코드의 문제점이다.
+        assertThat(profile.getName()).isEqualTo("홍길동");
+        assertThat(profile.getNickname()).isEqualTo("새닉네임");
+        assertThat(profile.getBio()).isEqualTo("기존 자기소개");
+        assertThat(profile.getMajor()).isEqualTo("컴퓨터공학과");
+        assertThat(profile.getGrade()).isEqualTo(4);
+        assertThat(profile.getProfileImage())
+                .isEqualTo("https://example.com/profile.png");
+    }
+
 }
