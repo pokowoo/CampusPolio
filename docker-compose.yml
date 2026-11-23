@@ -1,46 +1,53 @@
-version: "3.8"
 
 services:
   backend:
     image: woojinlee2/campuspolio:latest
     container_name: campus-backend
-
     depends_on:
       - redis
-
     environment:
+      # Google OAuth
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
 
+      # MySQL
       DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
       DB_NAME: ${DB_NAME}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
 
+      # JWT
+      JWT_SECRET: ${JWT_SECRET}
+
+      # Gmail SMTP
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+
+      # Claude API
+      CLAUDE_API_KEY: ${CLAUDE_API_KEY}
+
+      # Redis
       REDIS_HOST: redis
       REDIS_PORT: 6379
 
+      # Spring
       SPRING_PROFILES_ACTIVE: prod
-
-      JAVA_OPTS: >
+      JAVA_OPTS: >-
         -Dsun.net.inetaddr.ttl=0
         -Dsun.net.inetaddr.negative.ttl=0
-
     ports:
-      - "8080:8080"
-
-    restart: always
+      # Nginx on the EC2 host will proxy requests to this port.
+      # Binding to localhost prevents direct public access to port 8080.
+      - "127.0.0.1:8080:8080"
+    restart: unless-stopped
 
   redis:
     image: redis:7-alpine
     container_name: campus-redis
-
     command: redis-server --appendonly yes
-
     volumes:
       - redis-data:/data
-
-    restart: always
+    restart: unless-stopped
 
 volumes:
   redis-data:
+

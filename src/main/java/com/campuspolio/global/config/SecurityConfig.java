@@ -2,6 +2,7 @@
 package com.campuspolio.global.config;
 
 import com.campuspolio.global.security.JwtAuthenticationFilter;
+import com.campuspolio.global.security.RestAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,7 +14,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
+import com.campuspolio.global.security.RestAuthenticationEntryPoint;
 import java.util.List;
 
 @Configuration
@@ -21,6 +22,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final RestAuthenticationEntryPoint authenticationEntryPoint;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http)
@@ -62,12 +64,20 @@ public class SecurityConfig {
                                 "/api/auth/refresh",
                                 "/api/auth/logout"
                         ).permitAll()
-                        //비로그인 접근가능
-                        .requestMatchers(HttpMethod.GET, "/api/portfolios/*").permitAll()
 
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/home",
+                                "/api/projects",
+                                "/api/projects/*",
+                                "/api/portfolios/*"
+                        ).permitAll()
                         // 그 외 모든 API는 JWT 인증 필요
                         .anyRequest().authenticated()
 
+                )
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(authenticationEntryPoint)
                 )
 
                 .addFilterBefore(
