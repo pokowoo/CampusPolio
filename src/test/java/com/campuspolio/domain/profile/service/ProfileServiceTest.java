@@ -450,7 +450,7 @@ class ProfileServiceTest {
 
     @Test
     @DisplayName("PATCH 요청에서 일부 필드만 전달하면 나머지 필드는 null로 변경된다")
-    void updateProfile_partialRequest_currentlyOverwritesOtherFieldsWithNull()
+    void updateProfile_partialRequest_preservesOtherFields()
             throws Exception {
 
         Long userId = 1L;
